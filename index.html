@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@600;900&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#050e46}
+a{color:#e8c877;text-decoration:none}a:hover{color:#f5dfa3}
+textarea:focus,input:focus{outline:2px solid rgba(110,168,255,.55);outline-offset:-2px;border-radius:8px}
+textarea::placeholder{color:rgba(16,26,77,.3);font-family:'Noto Serif KR',serif;font-weight:900;font-size:20px;line-height:1.45}
+@keyframes confettiFall{0%{transform:translateY(-10px) rotate(0deg);opacity:1}100%{transform:translateY(420px) rotate(540deg);opacity:0}}
+@keyframes glowPulse{0%,100%{opacity:.45}50%{opacity:.95}}
+@keyframes beamFlash{0%,100%{opacity:.25}12%{opacity:1}30%{opacity:.4}50%{opacity:.95}68%{opacity:.35}85%{opacity:.9}}
+@keyframes hueSpin{0%{filter:blur(7px) hue-rotate(0deg)}100%{filter:blur(7px) hue-rotate(360deg)}}
+@keyframes ballRise{0%{transform:translateY(150px) scale(.32);opacity:0}55%{opacity:1}100%{transform:translateY(0) scale(1);opacity:1}}
+@keyframes paperIn{0%{transform:scale(.45) translateY(24px);opacity:0}100%{transform:scale(1) translateY(0);opacity:1}}
+@keyframes lottoA{0%{transform:translate(0,0) rotate(0)}25%{transform:translate(78px,-72px) rotate(90deg)}50%{transform:translate(140px,-8px) rotate(200deg)}75%{transform:translate(58px,-96px) rotate(280deg)}100%{transform:translate(0,0) rotate(360deg)}}
+@keyframes lottoB{0%{transform:translate(0,0) rotate(0)}30%{transform:translate(-64px,-80px) rotate(-120deg)}55%{transform:translate(-110px,-6px) rotate(-190deg)}80%{transform:translate(-40px,-104px) rotate(-300deg)}100%{transform:translate(0,0) rotate(-360deg)}}
+@keyframes lottoC{0%{transform:translate(0,0) rotate(0)}20%{transform:translate(40px,-100px) rotate(140deg)}45%{transform:translate(-52px,-58px) rotate(220deg)}70%{transform:translate(66px,-30px) rotate(300deg)}100%{transform:translate(0,0) rotate(360deg)}}
+@keyframes fadeUp{0%{opacity:0;transform:translateY(24px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes handInL{0%{transform:translate(-34px,74px) rotate(-12deg);opacity:0}100%{transform:rotate(5deg);opacity:1}}
+@keyframes handInR{0%{transform:scaleX(-1) translate(-34px,74px) rotate(-12deg);opacity:0}100%{transform:scaleX(-1) rotate(5deg);opacity:1}}
+@keyframes beamSway{0%,100%{transform:translateX(-16px)}50%{transform:translateX(16px)}}
+@keyframes slipIdle{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-6px) rotate(1deg)}}
+</style>
+</helmet>
+<div style="font-family:'Noto Sans KR',sans-serif;min-height:100dvh;max-width:430px;margin:0 auto;background:linear-gradient(150deg,#12aede 0%,#1b2fae 38%,#3c1a9e 62%,#a01283 100%);color:#fff;display:flex;flex-direction:column;overflow:hidden;position:relative">
+
+  <button onClick="{{ toggleMute }}" aria-label="{{ soundLabel }}" style="position:absolute;top:14px;right:14px;z-index:20;width:38px;height:38px;padding:0;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.18);border-radius:50%;background:rgba(8,12,36,.45);backdrop-filter:blur(8px);color:#fff;font-size:15px;line-height:1;cursor:pointer" style-hover="background:rgba(255,255,255,.16)" style-active="transform:scale(.94)">{{ soundIcon }}</button>
+
+  <sc-if value="{{ isStage }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:0 24px 34px;position:relative">
+
+      <div style="position:absolute;inset:0;overflow:hidden;pointer-events:none">
+        <sc-for list="{{ beams }}" as="b" hint-placeholder-count="0">
+          <div style="position:absolute;top:-20%;left:{{ b.left }}%;width:34px;height:150%;transform-origin:center;transform:rotate({{ b.rot }}deg)">
+            <div style="width:100%;height:100%;background:{{ b.bg }};filter:blur(7px);animation:{{ b.anim }}"></div>
+          </div>
+        </sc-for>
+        <div style="position:absolute;left:50%;top:40%;width:480px;height:480px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle, rgba(50,40,160,.5) 0%, rgba(50,40,160,0) 65%)"></div>
+        <div style="position:absolute;left:0;right:0;bottom:0;height:120px;background:linear-gradient(180deg, rgba(20,8,50,0) 0%, rgba(20,8,50,.7) 60%, rgba(16,6,44,.95) 100%)"></div>
+      </div>
+
+      <sc-if value="{{ showConfetti }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:5">
+          <sc-for list="{{ confetti }}" as="c" hint-placeholder-count="0">
+            <div style="position:absolute;top:-16px;left:{{ c.left }}%;width:7px;height:13px;border-radius:2px;background:{{ c.bg }};animation:confettiFall {{ c.dur }}s {{ c.delay }}s linear forwards;opacity:0"></div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <div style="position:relative;z-index:1;display:flex;justify-content:center;padding-top:14px">
+        <img src="assets/logo-cut.png" alt="MY ANSWER IS" style="width:250px;display:block;filter:drop-shadow(0 2px 14px rgba(0,0,40,.35))"></img>
+      </div>
+
+      <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:14px">
+        <p style="margin:0;font-size:26px;font-weight:700;line-height:1.35;text-align:center;text-wrap:pretty;letter-spacing:-0.3px">{{ stageTitle }} <span style="color:#8db6ff">{{ stageTitleAccent }}</span></p>
+        <p style="margin:0;font-size:13px;line-height:1.5;color:rgba(255,255,255,.55);text-align:center">{{ stageSub }}</p>
+      </div>
+
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;position:relative;width:100%;z-index:1;padding-bottom:38px;box-sizing:border-box">
+        <sc-if value="{{ isBowl }}" hint-placeholder-val="{{ false }}">
+          <div style="position:relative;width:250px;height:210px;cursor:grab;touch-action:none" onPointerDown="{{ bowlDown }}">
+            <div style="position:absolute;left:5px;right:5px;top:10px;bottom:0;border-radius:47% 47% 46% 46% / 40% 40% 56% 56%;background:radial-gradient(ellipse at 30% 25%, rgba(255,255,255,.22), rgba(255,255,255,.05) 45%, rgba(255,255,255,.1) 100%);border:2px solid rgba(255,255,255,.4);box-shadow:inset 0 -18px 40px rgba(255,255,255,.08), 0 20px 40px rgba(0,0,20,.35);overflow:hidden">
+              <div style="position:absolute;left:18px;top:22px;width:26px;height:110px;border-radius:20px;background:linear-gradient(180deg,rgba(255,255,255,.4),rgba(255,255,255,0));filter:blur(4px);transform:rotate(10deg)"></div>
+              <div style="position:absolute;left:24px;bottom:16px;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#cdd5e4 65%,#a8b3c8);animation:lottoA 3.4s linear infinite"></div>
+              <div style="position:absolute;left:74px;bottom:12px;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#d4dbe8 65%,#aeb9cd);animation:lottoB 4s linear .2s infinite"></div>
+              <div style="position:absolute;left:124px;bottom:16px;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#cdd5e4 65%,#a8b3c8);animation:lottoC 3.6s linear .5s infinite"></div>
+              <div style="position:absolute;left:174px;bottom:12px;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#d4dbe8 65%,#aeb9cd);animation:lottoB 3.1s linear .8s infinite"></div>
+              <div style="position:absolute;left:50px;bottom:50px;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#d0d8e6 65%,#abb6cb);animation:lottoA 4.4s linear .6s infinite"></div>
+              <div style="position:absolute;left:100px;bottom:54px;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#cdd5e4 65%,#a8b3c8);animation:lottoC 3.8s linear .1s infinite"></div>
+              <div style="position:absolute;left:150px;bottom:50px;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#d4dbe8 65%,#aeb9cd);animation:lottoB 3.3s linear .4s infinite"></div>
+            </div>
+            <div style="position:absolute;left:50%;top:2px;width:150px;height:34px;transform:translateX(-50%);border-radius:50%;border:2px solid rgba(255,255,255,.45);background:rgba(255,255,255,.06)"></div>
+            <sc-if value="{{ dragging }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;left:{{ dragLeft }};top:{{ dragTop }};width:52px;height:52px;margin-left:-26px;margin-top:-26px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#cdd5e4 65%,#a8b3c8);box-shadow:0 12px 26px rgba(0,0,20,.45);z-index:6;pointer-events:none"></div>
+            </sc-if>
+          </div>
+        </sc-if>
+        <sc-if value="{{ isBall }}" hint-placeholder-val="{{ false }}">
+          <div style="position:relative;width:170px;height:170px;animation:ballRise .8s cubic-bezier(.3,1.2,.4,1) both;cursor:pointer" onClick="{{ openBall }}">
+            <div style="position:absolute;left:50%;top:50%;width:80px;height:36px;transform:{{ slipPeekT }};margin-left:-40px;margin-top:-18px;background:#fdfcf8;border-radius:4px;box-shadow:0 6px 16px rgba(0,0,20,.35);transition:transform .5s ease .15s, opacity .4s ease .15s;opacity:{{ slipPeekO }};display:flex;align-items:center;justify-content:center">
+              <div style="width:56px;height:2px;background:rgba(10,29,122,.15)"></div>
+            </div>
+            <div style="position:absolute;left:5px;top:5px;width:160px;height:80px;border-radius:160px 160px 0 0;background:radial-gradient(circle at 56px 48px,#ffffff,#d3dae8 60%,#a9b4c9 100%);background-size:160px 160px;transition:transform .65s cubic-bezier(.5,0,.3,1);transform:{{ ballTopT }};box-shadow:0 10px 30px rgba(0,0,20,.3)"></div>
+            <div style="position:absolute;left:5px;top:85px;width:160px;height:80px;border-radius:0 0 160px 160px;background:radial-gradient(circle at 56px -32px,#f2f5fa,#c7cfdf 60%,#9aa6bd 100%);transition:transform .65s cubic-bezier(.5,0,.3,1);transform:{{ ballBotT }};box-shadow:0 16px 34px rgba(0,0,20,.4)"></div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ isPaper }}" hint-placeholder-val="{{ true }}">
+        <div style="animation:paperIn .5s ease both">
+        <div style="animation:{{ idleAnim }}">
+          <div style="position:relative;width:250px;height:176px;perspective:900px;transition:transform 1.1s cubic-bezier(.34,1.3,.4,1);transform:{{ paperLift }}">
+            <div style="position:absolute;left:0;bottom:0;width:250px;height:88px;background:linear-gradient(180deg,#fdfcf8 0%,#f1eee4 100%);border-radius:0 0 8px 8px;box-shadow:0 18px 40px rgba(0,0,10,.5)"></div>
+            <div style="position:absolute;left:0;bottom:88px;width:250px;height:88px;transform-origin:bottom center;transform-style:preserve-3d;z-index:2;transition:{{ flapTransition }};transform:{{ flapTransform }}">
+              <div style="position:absolute;inset:0;backface-visibility:hidden;background:linear-gradient(0deg,#fdfcf8 0%,#f8f5ec 100%);border-radius:8px 8px 0 0;border-bottom:1px solid rgba(10,29,122,.08);overflow:hidden">
+                <div style="position:absolute;left:0;right:0;top:0;height:26px;background:linear-gradient(100deg,#1b2c8f 0%,#2f3fa8 38%,#e0475e 58%,#27357f 82%,#1b2c8f 100%);display:flex;align-items:center;justify-content:space-between;padding:0 12px;box-sizing:border-box">
+                  <span style="display:flex;align-items:center;gap:6px"><img src="assets/logo-cut.png" alt="" style="height:16px;width:auto;display:block"></img><span style="font-size:8px;letter-spacing:2px;color:#fff;font-weight:700">MY ANSWER IS</span></span>
+                  <span style="font-size:8px;letter-spacing:1px;color:rgba(255,255,255,.85);font-family:'Noto Serif KR',serif;font-style:italic">DRAW '26</span>
+                </div>
+              </div>
+              <div style="position:absolute;inset:0;backface-visibility:hidden;transform:rotateX(180deg);background:#fdfcf8;border-radius:8px 8px 0 0;border:1px solid rgba(10,29,122,.15);box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px">
+                <img src="assets/logo-navy.png" alt="" style="width:64px;height:auto;display:block"></img>
+                <span style="font-size:9px;letter-spacing:3px;color:#0a1d7a;font-weight:700">MY ANSWER IS</span>
+              </div>
+            </div>
+            <div style="position:absolute;inset:0;z-index:3;display:flex;align-items:center;justify-content:center;padding:34px 18px 16px;pointer-events:none;transition:{{ answerTransition }};opacity:{{ answerOpacity }};transform:{{ answerScale }}">
+              <p style="margin:0;font-family:'Noto Serif KR',serif;font-weight:900;font-size:25px;line-height:1.35;color:#101a4d;text-align:center;text-wrap:pretty;word-break:keep-all">{{ answer }}</p>
+            </div>
+            <svg width="88" height="110" viewBox="0 0 88 110" style="position:absolute;left:-34px;bottom:-30px;z-index:4;transition:transform 1.1s cubic-bezier(.34,1.3,.4,1);transform:{{ handL }};animation:handInL .55s cubic-bezier(.3,1.3,.4,1) .35s backwards">
+              <path d="M10 110 L4 76 Q2 62 18 60 L46 66 L50 110 Z" fill="#141d4e"></path>
+              <ellipse cx="38" cy="54" rx="25" ry="21" fill="#e2a97c"></ellipse>
+              <ellipse cx="56" cy="40" rx="8" ry="6" fill="#e2a97c"></ellipse>
+              <ellipse cx="60" cy="50" rx="8" ry="6" fill="#dda172"></ellipse>
+              <ellipse cx="58" cy="60" rx="8" ry="6" fill="#d69a6b"></ellipse>
+              <ellipse cx="64" cy="46" rx="9" ry="15" fill="#eab68a" transform="rotate(18 64 46)"></ellipse>
+              <ellipse cx="34" cy="62" rx="14" ry="7" fill="rgba(0,0,0,.07)"></ellipse>
+            </svg>
+            <svg width="88" height="110" viewBox="0 0 88 110" style="position:absolute;right:-34px;bottom:-30px;z-index:4;transition:transform 1.1s cubic-bezier(.34,1.3,.4,1);transform:{{ handR }};animation:handInR .55s cubic-bezier(.3,1.3,.4,1) .35s backwards">
+              <path d="M10 110 L4 76 Q2 62 18 60 L46 66 L50 110 Z" fill="#141d4e"></path>
+              <ellipse cx="38" cy="54" rx="25" ry="21" fill="#e2a97c"></ellipse>
+              <ellipse cx="56" cy="40" rx="8" ry="6" fill="#e2a97c"></ellipse>
+              <ellipse cx="60" cy="50" rx="8" ry="6" fill="#dda172"></ellipse>
+              <ellipse cx="58" cy="60" rx="8" ry="6" fill="#d69a6b"></ellipse>
+              <ellipse cx="64" cy="46" rx="9" ry="15" fill="#eab68a" transform="rotate(18 64 46)"></ellipse>
+              <ellipse cx="34" cy="62" rx="14" ry="7" fill="rgba(0,0,0,.07)"></ellipse>
+            </svg>
+          </div>
+        </div>
+        </div>
+        </sc-if>
+      </div>
+
+      <sc-if value="{{ notRevealed }}" hint-placeholder-val="{{ true }}">
+        <button onClick="{{ ctaAction }}" style="position:relative;z-index:1;width:100%;max-width:320px;padding:17px;border:none;border-radius:999px;background:linear-gradient(135deg,#6ea8ff,#2f6bff);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 10px 28px rgba(47,107,255,.45)" style-hover="filter:brightness(1.08)" style-active="transform:scale(.98)">{{ ctaLabel }}</button>
+        <p style="position:relative;z-index:1;margin:12px 0 0;font-size:11px;color:rgba(255,255,255,.45);text-align:center">누구나 링크 하나로 자신만의 답변을 만들 수 있어요</p>
+      </sc-if>
+      <sc-if value="{{ revealed }}" hint-placeholder-val="{{ false }}">
+        <div style="position:relative;z-index:1;display:flex;gap:12px;width:100%;max-width:320px">
+          <button onClick="{{ refold }}" style="flex:1;padding:15px;border:1px solid rgba(255,255,255,.16);border-radius:999px;background:rgba(10,14,40,.5);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:15px;font-weight:500;cursor:pointer;backdrop-filter:blur(8px)" style-hover="background:rgba(255,255,255,.12)">다시 접기</button>
+          <button onClick="{{ goCompose }}" style="flex:1;padding:15px;border:none;border-radius:999px;background:linear-gradient(135deg,#6ea8ff,#2f6bff);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 10px 28px rgba(47,107,255,.4)" style-hover="filter:brightness(1.08)">나도 만들기</button>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isDone }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:26px 24px 34px;position:relative;overflow:hidden">
+      <div style="position:absolute;left:50%;top:50%;width:320px;height:520px;transform:translate(-50%,-50%)">
+      <div style="position:absolute;left:10px;top:40px;width:300px;transition:transform .5s cubic-bezier(.5,0,.4,1), opacity .35s ease;transform:{{ crumplePaperT }};opacity:{{ crumplePaperO }};background:linear-gradient(180deg,#fdfcf8,#f1eee4);border-radius:10px;box-shadow:0 16px 36px rgba(0,0,20,.4);overflow:hidden">
+        <div style="height:26px;background:linear-gradient(100deg,#1b2c8f 0%,#2f3fa8 38%,#e0475e 58%,#27357f 82%,#1b2c8f 100%);display:flex;align-items:center;justify-content:space-between;padding:0 12px;box-sizing:border-box">
+          <span style="display:flex;align-items:center;gap:6px"><img src="assets/logo-cut.png" alt="" style="height:16px;width:auto;display:block"></img><span style="font-size:8px;letter-spacing:2px;color:#fff;font-weight:700">MY ANSWER IS</span></span>
+          <span style="font-size:8px;letter-spacing:1px;color:rgba(255,255,255,.85);font-family:'Noto Serif KR',serif;font-style:italic">DRAW '26</span>
+        </div>
+        <p style="margin:0;padding:20px 18px;font-family:'Noto Serif KR',serif;font-weight:900;font-size:20px;line-height:1.45;color:#101a4d;text-align:center;text-wrap:pretty;word-break:keep-all;overflow:hidden;max-height:120px">{{ aPreview }}</p>
+      </div>
+      <svg width="96" height="92" viewBox="0 0 96 92" style="position:absolute;left:112px;top:74px;transition:{{ crumpleBallTrans }};transform:{{ crumpleBallT }};opacity:{{ crumpleBallO }};filter:drop-shadow(0 12px 22px rgba(0,0,20,.4))">
+        <path d="M22 14 L44 4 L66 10 L84 22 L92 44 L86 66 L68 84 L44 90 L20 82 L6 62 L4 38 Z" fill="#f4f1e6"></path>
+        <path d="M22 14 L38 30 L44 4 M66 10 L52 32 L84 22 M92 44 L64 46 L86 66 M68 84 L56 58 L44 90 M20 82 L34 56 L6 62 M4 38 L30 42 L22 14" fill="none" stroke="#d4cdb9" stroke-width="1.6"></path>
+        <path d="M38 30 L52 32 L64 46 L56 58 L34 56 L30 42 Z" fill="#e9e4d4"></path>
+        <path d="M44 4 L52 32 L38 30 Z M86 66 L56 58 L64 46 Z" fill="#efeadb"></path>
+      </svg>
+      <div style="position:absolute;left:85px;top:340px;width:150px;height:150px;transition:{{ capTrans }};transform:{{ capT }}">
+        <div style="position:absolute;left:0;top:0;width:150px;height:75px;border-radius:150px 150px 0 0;background:radial-gradient(circle at 52px 45px,#ffffff,#d3dae8 60%,#a9b4c9);transition:transform .5s cubic-bezier(.5,0,.3,1);transform:{{ capTopT }};box-shadow:0 10px 26px rgba(0,0,20,.3)"></div>
+        <div style="position:absolute;left:0;top:75px;width:150px;height:75px;border-radius:0 0 150px 150px;background:radial-gradient(circle at 52px -30px,#f2f5fa,#c7cfdf 60%,#9aa6bd);box-shadow:0 16px 30px rgba(0,0,20,.4)"></div>
+      </div>
+      </div>
+      <sc-if value="{{ doneLink }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:fadeUp .5s ease both;display:flex;flex-direction:column;gap:14px;width:100%;max-width:340px;padding:24px;box-sizing:border-box;border-radius:22px;background:rgba(8,12,36,.55);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(10px);align-items:center">
+          <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#6ea8ff,#2f6bff);display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;font-weight:700;box-shadow:0 8px 20px rgba(47,107,255,.45)">✓</div>
+          <p style="margin:0;font-size:21px;font-weight:700;letter-spacing:-0.3px">링크 생성 완료!</p>
+          <p style="margin:-6px 0 0;font-size:12.5px;color:rgba(255,255,255,.55);text-align:center">친구에게 보내면 종이 추첨식이 시작돼요</p>
+          <div style="width:100%;padding:12px 14px;box-sizing:border-box;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);font-family:ui-monospace,Menlo,monospace;font-size:11px;line-height:1.5;color:#cdd8ff;word-break:break-all;max-height:56px;overflow:hidden">{{ linkUrl }}</div>
+          <button onClick="{{ copyLink }}" style="width:100%;padding:15px;border:none;border-radius:999px;background:linear-gradient(135deg,#6ea8ff,#2f6bff);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 10px 28px rgba(47,107,255,.45)" style-hover="filter:brightness(1.08)" style-active="transform:scale(.98)">{{ copyLabel }}</button>
+          <button onClick="{{ goCompose }}" style="width:100%;padding:12px;border:1px solid rgba(255,255,255,.16);border-radius:999px;background:rgba(255,255,255,.06);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:13.5px;cursor:pointer" style-hover="background:rgba(255,255,255,.12)">다시 쓰기</button>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isCompose }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1;display:flex;flex-direction:column;padding:26px 24px 34px;gap:18px">
+      <div style="display:flex;justify-content:center">
+        <img src="assets/logo-cut.png" alt="MY ANSWER IS" style="width:150px;display:block;filter:drop-shadow(0 2px 14px rgba(0,0,40,.35))"></img>
+      </div>
+      <h1 style="margin:10px 0 0;font-size:27px;font-weight:700;line-height:1.35;text-align:center;letter-spacing:-0.3px">나만의 답변 <span style="color:#8db6ff">만들기</span></h1>
+      <p style="margin:-10px 0 0;font-size:13px;line-height:1.6;color:rgba(255,255,255,.55);text-align:center;text-wrap:pretty">종이 안에 넣을 답변을 쓰면 링크가 만들어져요</p>
+      <div style="margin:6px auto 0;width:100%;max-width:300px;background:linear-gradient(180deg,#fdfcf8,#f1eee4);border-radius:10px;box-shadow:0 16px 36px rgba(0,0,20,.4);overflow:hidden">
+        <div style="height:26px;background:linear-gradient(100deg,#1b2c8f 0%,#2f3fa8 38%,#e0475e 58%,#27357f 82%,#1b2c8f 100%);display:flex;align-items:center;justify-content:space-between;padding:0 12px;box-sizing:border-box">
+          <span style="display:flex;align-items:center;gap:6px"><img src="assets/logo-cut.png" alt="" style="height:16px;width:auto;display:block"></img><span style="font-size:8px;letter-spacing:2px;color:#fff;font-weight:700">MY ANSWER IS</span></span>
+          <span style="font-size:8px;letter-spacing:1px;color:rgba(255,255,255,.85);font-family:'Noto Serif KR',serif;font-style:italic">DRAW '26</span>
+        </div>
+        <textarea value="{{ aInput }}" onChange="{{ onA }}" rows="4" placeholder="여기에 답변을 적어보세요" style="display:block;width:100%;box-sizing:border-box;padding:20px 18px;border:none;background:transparent;color:#101a4d;font-family:'Noto Serif KR',serif;font-weight:900;font-size:20px;line-height:1.45;text-align:center;resize:none;outline:none"></textarea>
+      </div>
+      <button onClick="{{ makeLink }}" style="margin-top:2px;padding:17px;border:none;border-radius:999px;background:linear-gradient(135deg,#6ea8ff,#2f6bff);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 10px 28px rgba(47,107,255,.45)" style-hover="filter:brightness(1.08)" style-active="transform:scale(.98)">링크 만들기</button>
+      <p style="margin:-8px 0 0;font-size:10.5px;line-height:1.5;color:rgba(255,255,255,.4);text-align:center">링크를 받은 친구가 종이를 펼치면 답변이 공개됩니다</p>
+      <div style="flex:1"></div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 390, &quot;height&quot;: 844}, &quot;unfoldSeconds&quot;: {&quot;editor&quot;: &quot;range&quot;, &quot;default&quot;: 1.1, &quot;min&quot;: 0.5, &quot;max&quot;: 2.5, &quot;step&quot;: 0.1, &quot;unit&quot;: &quot;s&quot;, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;연출&quot;}, &quot;confetti&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;연출&quot;}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      screen: 'stage', phase: 'bowl', ballOpen: false, revealed: false, confettiOn: false,
+      answer: '무조건 치킨.',
+      aInput: '', link: '', copied: false,
+      muted: false, playing: false
+    };
+    const colors = ['#e8c877', '#f5dfa3', '#ffffff', '#7ea0ff'];
+    this.confettiPieces = Array.from({length: 22}, (_, i) => ({
+      left: Math.round(Math.random() * 96),
+      dur: (2 + Math.random() * 1.6).toFixed(2),
+      delay: (Math.random() * 0.5).toFixed(2),
+      bg: colors[i % colors.length]
+    }));
+    this.beamList = [
+      {left: 3, rot: 15, dur: 3.2, delay: 0, swayDur: 5.6},
+      {left: 19, rot: 8, dur: 4.1, delay: 0.7, swayDur: 6.8},
+      {left: 38, rot: 3, dur: 3.6, delay: 1.3, swayDur: 5.1},
+      {left: 58, rot: -3, dur: 4.4, delay: 0.4, swayDur: 7.3},
+      {left: 78, rot: -8, dur: 3.4, delay: 1.0, swayDur: 5.9},
+      {left: 93, rot: -15, dur: 4.0, delay: 0.2, swayDur: 6.4}
+    ];
+  }
+  bowlDown = (e) => {
+    e.preventDefault();
+    const r = e.currentTarget.getBoundingClientRect();
+    this._dragStartY = e.clientY;
+    const move = (ev) => this.setState({ drag: { x: ev.clientX - r.left, y: ev.clientY - r.top } });
+    const up = (ev) => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      const lifted = this._dragStartY - ev.clientY > 70;
+      this.setState(lifted ? { drag: null, phase: 'ball', ballOpen: false } : { drag: null });
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+    this.setState({ drag: { x: e.clientX - r.left, y: e.clientY - r.top } });
+  };
+  startBgm = () => {
+    const a = this._audio;
+    if (!a || this.state.muted) return;
+    a.play().then(() => {
+      if (!this.state.playing) this.setState({ playing: true });
+    }).catch(() => {});
+  };
+  componentDidMount() {
+    const a = new Audio('assets/champs.mp3');
+    a.loop = true;
+    a.volume = 0.6;
+    a.preload = 'auto';
+    this._audio = a;
+    this.startBgm();
+    this._unlock = () => this.startBgm();
+    ['pointerdown', 'touchstart', 'keydown'].forEach((ev) =>
+      window.addEventListener(ev, this._unlock, { passive: true })
+    );
+
+    const m = location.hash.match(/#d=([^&]+)/);
+    if (m) {
+      try {
+        const d = JSON.parse(decodeURIComponent(escape(atob(m[1]))));
+        this.setState({ screen: 'stage', answer: d.a || '' });
+      } catch (e) {}
+    }
+  }
+  componentWillUnmount() {
+    ['pointerdown', 'touchstart', 'keydown'].forEach((ev) =>
+      window.removeEventListener(ev, this._unlock)
+    );
+    if (this._audio) { this._audio.pause(); this._audio = null; }
+  }
+  renderVals() {
+    const s = this.state;
+    const dur = this.props.unfoldSeconds ?? 1.1;
+    const confettiEnabled = this.props.confetti ?? true;
+    return {
+      soundIcon: s.muted ? '🔇' : '🔊',
+      soundLabel: s.muted ? '음악 켜기' : '음악 끄기',
+      toggleMute: () => {
+        const a = this._audio;
+        const next = !s.muted;
+        this.setState({ muted: next });
+        if (!a) return;
+        if (next) { a.pause(); }
+        else { a.play().then(() => this.setState({ playing: true })).catch(() => {}); }
+      },
+      isStage: s.screen === 'stage',
+      isCompose: s.screen === 'compose',
+      isDone: s.screen === 'done',
+      doneLink: s.donePhase === 'link',
+      aPreview: (s.aInput || '').trim(),
+      crumplePaperT: s.donePhase === 'paper' ? 'none' : s.donePhase === 'grab' ? 'scale(.9) rotate(-4deg)' : 'scale(.16) rotate(30deg)',
+      crumplePaperO: s.donePhase === 'paper' || s.donePhase === 'grab' ? 1 : 0,
+      crumpleBallT: s.donePhase === 'crumple' ? 'scale(1)' : (s.donePhase === 'paper' || s.donePhase === 'grab') ? 'scale(.2)' : 'translate(0,295px) scale(.5)',
+      crumpleBallO: s.donePhase === 'crumple' || s.donePhase === 'insert' ? 1 : 0,
+      crumpleBallTrans: s.donePhase === 'insert' ? 'transform .55s cubic-bezier(.5,0,.5,1), opacity .25s ease' : 'transform .4s ease, opacity .25s ease',
+      capT: s.donePhase === 'throw' || s.donePhase === 'link' ? 'translateY(-1100px) rotate(560deg) scale(.6)' : 'none',
+      capTrans: s.donePhase === 'throw' || s.donePhase === 'link' ? 'transform .9s cubic-bezier(.45,-.15,.65,1)' : 'transform .5s ease',
+      capTopT: s.donePhase === 'close' || s.donePhase === 'throw' || s.donePhase === 'link' ? 'none' : 'translateY(-50px) rotate(-16deg)',
+      isBowl: s.phase === 'bowl',
+      isBall: s.phase === 'ball',
+      isPaper: s.phase === 'paper',
+      stageTitle: s.phase === 'bowl' ? '공 하나를,' : s.phase === 'ball' ? '공 안에,' : '답변은,',
+      stageTitleAccent: s.phase === 'bowl' ? '뽑아주세요.' : s.phase === 'ball' ? '종이가 있어요.' : '종이 안에.',
+      stageSub: s.phase === 'bowl' ? '공을 위로 드래그해서 뽑아보세요' : s.phase === 'ball' ? '공을 열어서 확인해보세요' : '버튼을 누르면 운명의 답변이 공개됩니다',
+      dragging: !!s.drag,
+      dragLeft: s.drag ? s.drag.x + 'px' : '0px',
+      dragTop: s.drag ? s.drag.y + 'px' : '0px',
+      bowlDown: this.bowlDown,
+      ctaLabel: s.phase === 'bowl' ? '공 뽑기' : s.phase === 'ball' ? '공 열기' : '종이 펼치기',
+      ballTopT: s.ballOpen ? 'translateY(-70px) rotate(-12deg)' : 'none',
+      ballBotT: s.ballOpen ? 'translateY(44px) rotate(8deg)' : 'none',
+      slipPeekT: s.ballOpen ? 'scale(1.15) translateY(-4px)' : 'scale(.55)',
+      slipPeekO: s.ballOpen ? 1 : 0,
+      answer: s.answer,
+      revealed: s.revealed, notRevealed: !s.revealed,
+      showConfetti: s.confettiOn && confettiEnabled,
+      confetti: this.confettiPieces,
+      beams: this.beamList.map((b, i) => {
+        const party = s.revealed && s.screen === 'stage';
+        const pc = ['rgba(120,240,255,.75)', 'rgba(255,120,230,.7)', 'rgba(255,220,120,.75)'][i % 3];
+        return {
+          left: b.left, rot: b.rot,
+          bg: party ? 'linear-gradient(to bottom, rgba(0,0,0,0), ' + pc + ' 50%, rgba(0,0,0,0))' : 'linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,.35) 50%, rgba(255,255,255,0))',
+          anim: party
+            ? 'beamFlash ' + (0.55 + i * 0.14).toFixed(2) + 's ease-in-out ' + b.delay + 's infinite, beamSway ' + (b.swayDur / 3).toFixed(2) + 's ease-in-out infinite, hueSpin ' + (1.8 + i * 0.35).toFixed(2) + 's linear infinite'
+            : 'glowPulse ' + b.dur + 's ease-in-out ' + b.delay + 's infinite, beamSway ' + b.swayDur + 's ease-in-out ' + b.delay + 's infinite'
+        };
+      }),
+
+      idleAnim: s.revealed ? 'none' : 'slipIdle 3.4s ease-in-out infinite',
+      flapTransform: s.revealed ? 'rotateX(0deg)' : 'rotateX(-180deg)',
+      flapTransition: 'transform ' + dur + 's cubic-bezier(.65,0,.25,1)',
+      paperLift: s.revealed ? 'scale(1.12) translateY(-14px)' : 'scale(1) translateY(6px)',
+      handL: s.revealed ? 'translate(-6px, 4px) rotate(-4deg)' : 'rotate(5deg)',
+      handR: s.revealed ? 'scaleX(-1) translate(-6px, 4px) rotate(-4deg)' : 'scaleX(-1) rotate(5deg)',
+      answerOpacity: s.revealed ? 1 : 0,
+      answerTransition: s.revealed ? 'opacity .6s ease ' + (dur * 0.65) + 's, transform .6s ease ' + (dur * 0.65) + 's' : 'opacity .25s ease, transform .25s ease',
+      answerScale: s.revealed ? 'scale(1)' : 'scale(.92)',
+      aInput: s.aInput,
+      hasLink: !!s.link, linkUrl: s.link,
+      copyLabel: s.copied ? '복사됨 ✓' : '링크 복사',
+      onA: (e) => this.setState({ aInput: e.target.value, link: '' }),
+      pickBall: () => { if (s.phase === 'bowl') this.setState({ phase: 'ball', ballOpen: false }); },
+      openBall: () => {
+        if (s.ballOpen) return;
+        this.setState({ ballOpen: true });
+        clearTimeout(this._bt);
+        this._bt = setTimeout(() => this.setState({ phase: 'paper' }), 800);
+      },
+      ctaAction: () => {
+        if (s.phase === 'bowl') { this.setState({ phase: 'ball', ballOpen: false }); return; }
+        if (s.phase === 'ball') {
+          if (s.ballOpen) return;
+          this.setState({ ballOpen: true });
+          clearTimeout(this._bt);
+          this._bt = setTimeout(() => this.setState({ phase: 'paper' }), 800);
+          return;
+        }
+        this.setState({ revealed: true });
+        clearTimeout(this._ct);
+        this._ct = setTimeout(() => this.setState({ confettiOn: true }), dur * 1000 + 300);
+      },
+      refold: () => { clearTimeout(this._ct); this.setState({ revealed: false, confettiOn: false }); },
+      goCompose: () => this.setState({ screen: 'compose' }),
+      goStage: () => this.setState({ screen: 'stage', phase: 'bowl', ballOpen: false, revealed: false, confettiOn: false, answer: '무조건 치킨.' }),
+      makeLink: () => {
+        if (!s.aInput.trim()) return;
+        const data = JSON.stringify({ a: s.aInput.trim() });
+        const url = location.href.split('#')[0] + '#d=' + btoa(unescape(encodeURIComponent(data)));
+        clearTimeout(this._d0); clearTimeout(this._d1); clearTimeout(this._d2); clearTimeout(this._d3); clearTimeout(this._d4); clearTimeout(this._d5);
+        this.setState({ screen: 'done', donePhase: 'paper', link: url, copied: false });
+        this._d0 = setTimeout(() => this.setState({ donePhase: 'grab' }), 450);
+        this._d1 = setTimeout(() => this.setState({ donePhase: 'crumple' }), 850);
+        this._d4 = setTimeout(() => this.setState({ donePhase: 'insert' }), 1400);
+        this._d5 = setTimeout(() => this.setState({ donePhase: 'close' }), 2050);
+        this._d2 = setTimeout(() => this.setState({ donePhase: 'throw' }), 2650);
+        this._d3 = setTimeout(() => this.setState({ donePhase: 'link' }), 3550);
+      },
+      copyLink: () => {
+        navigator.clipboard && navigator.clipboard.writeText(s.link);
+        this.setState({ copied: true });
+      },
+      previewLink: () => this.setState({
+        screen: 'stage', phase: 'bowl', ballOpen: false, revealed: false, confettiOn: false,
+        answer: s.aInput.trim()
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>
