@@ -9,6 +9,20 @@
 <x-dc>
 <helmet>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MY ANSWER IS — 나만의 답변 만들기</title>
+<meta name="description" content="종이 안에 답변을 숨기고 링크로 공유하세요. 친구가 추첨식으로 펼쳐봅니다.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MY ANSWER IS">
+<meta property="og:title" content="MY ANSWER IS">
+<meta property="og:description" content="공을 뽑고 종이를 펼치면 답변이 공개됩니다.">
+<meta property="og:image" content="https://myansweris.vercel.app/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://myansweris.vercel.app/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="MY ANSWER IS">
+<meta name="twitter:description" content="공을 뽑고 종이를 펼치면 답변이 공개됩니다.">
+<meta name="twitter:image" content="https://myansweris.vercel.app/assets/og.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@600;900&display=swap" rel="stylesheet">
 <style>
@@ -36,7 +50,7 @@ textarea::placeholder{color:rgba(16,26,77,.3);font-family:'Noto Serif KR',serif;
 
   <button onClick="{{ toggleMute }}" aria-label="{{ soundLabel }}" style="position:absolute;top:14px;right:14px;z-index:20;width:38px;height:38px;padding:0;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.18);border-radius:50%;background:rgba(8,12,36,.45);backdrop-filter:blur(8px);color:#fff;font-size:15px;line-height:1;cursor:pointer" style-hover="background:rgba(255,255,255,.16)" style-active="transform:scale(.94)">{{ soundIcon }}</button>
 
-  <sc-if value="{{ isStage }}" hint-placeholder-val="{{ true }}">
+  <sc-if value="{{ isStage }}" hint-placeholder-val="{{ false }}">
     <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:0 24px 34px;position:relative">
 
       <div style="position:absolute;inset:0;overflow:hidden;pointer-events:none">
@@ -185,7 +199,7 @@ textarea::placeholder{color:rgba(16,26,77,.3);font-family:'Noto Serif KR',serif;
     </div>
   </sc-if>
 
-  <sc-if value="{{ isCompose }}" hint-placeholder-val="{{ false }}">
+  <sc-if value="{{ isCompose }}" hint-placeholder-val="{{ true }}">
     <div style="flex:1;display:flex;flex-direction:column;padding:26px 24px 34px;gap:18px">
       <div style="display:flex;justify-content:center">
         <img src="assets/logo-cut.png" alt="MY ANSWER IS" style="width:150px;display:block;filter:drop-shadow(0 2px 14px rgba(0,0,40,.35))"></img>
@@ -211,7 +225,7 @@ class Component extends DCLogic {
   constructor(props) {
     super(props);
     this.state = {
-      screen: 'stage', phase: 'bowl', ballOpen: false, revealed: false, confettiOn: false,
+      screen: 'compose', phase: 'bowl', ballOpen: false, revealed: false, confettiOn: false,
       answer: '무조건 치킨.',
       aInput: '', link: '', copied: false,
       muted: false, playing: false
