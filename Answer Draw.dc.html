@@ -261,6 +261,15 @@ class Component extends DCLogic {
     window.addEventListener('pointerup', up);
     this.setState({ drag: { x: e.clientX - r.left, y: e.clientY - r.top } });
   };
+  // URL-safe base64 without padding, so the shared link stays short.
+  b64encode(str) {
+    return btoa(unescape(encodeURIComponent(str)))
+      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+  b64decode(str) {
+    const b = str.replace(/-/g, '+').replace(/_/g, '/');
+    return decodeURIComponent(escape(atob(b + '==='.slice((b.length + 3) % 4))));
+  }
   startBgm = () => {
     const a = this._audio;
     if (!a || this.state.muted) return;
@@ -280,11 +289,14 @@ class Component extends DCLogic {
       window.addEventListener(ev, this._unlock, { passive: true })
     );
 
-    const m = location.hash.match(/#d=([^&]+)/);
-    if (m) {
+    const h = location.hash.slice(1);
+    if (h) {
+      const legacy = h.match(/^d=(.+)$/);
       try {
-        const d = JSON.parse(decodeURIComponent(escape(atob(m[1]))));
-        this.setState({ screen: 'stage', answer: d.a || '' });
+        const answer = legacy
+          ? (JSON.parse(this.b64decode(legacy[1])).a || '')
+          : this.b64decode(h);
+        if (answer) this.setState({ screen: 'stage', answer: answer });
       } catch (e) {}
     }
   }
@@ -391,8 +403,7 @@ class Component extends DCLogic {
       goStage: () => this.setState({ screen: 'stage', phase: 'bowl', ballOpen: false, revealed: false, confettiOn: false, answer: '무조건 치킨.' }),
       makeLink: () => {
         if (!s.aInput.trim()) return;
-        const data = JSON.stringify({ a: s.aInput.trim() });
-        const url = location.href.split('#')[0] + '#d=' + btoa(unescape(encodeURIComponent(data)));
+        const url = location.href.split('#')[0] + '#' + this.b64encode(s.aInput.trim());
         clearTimeout(this._d0); clearTimeout(this._d1); clearTimeout(this._d2); clearTimeout(this._d3); clearTimeout(this._d4); clearTimeout(this._d5);
         this.setState({ screen: 'done', donePhase: 'paper', link: url, copied: false });
         this._d0 = setTimeout(() => this.setState({ donePhase: 'grab' }), 450);
