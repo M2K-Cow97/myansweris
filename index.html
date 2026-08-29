@@ -271,6 +271,41 @@ class Component extends DCLogic {
     const b = str.replace(/-/g, '+').replace(/_/g, '/');
     return decodeURIComponent(escape(atob(b + '==='.slice((b.length + 3) % 4))));
   }
+  // Prefer a Korean male voice; voice lists load async on some browsers.
+  pickVoice() {
+    const all = window.speechSynthesis.getVoices().filter((v) => /^ko/i.test(v.lang));
+    if (!all.length) return null;
+    const male = all.find((v) => /male|남|minsu|injoon|yuna_male/i.test(v.name) && !/female|여/i.test(v.name));
+    return male
+      || all.find((v) => !/female|여|yuna|sora|heami|nari/i.test(v.name))
+      || all[0];
+  }
+  speakAnswer = (text) => {
+    const synth = window.speechSynthesis;
+    if (!synth || !text) return;
+    try {
+      synth.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'ko-KR';
+      u.rate = 0.92;
+      u.pitch = 0.7;
+      const v = this.pickVoice();
+      if (v) u.voice = v;
+      const a = this._audio;
+      const restore = () => { if (a && !this.state.muted) a.volume = 0.6; };
+      if (a && !this.state.muted) a.volume = 0.15;
+      u.onend = restore;
+      u.onerror = restore;
+      this._utter = u;
+      synth.speak(u);
+    } catch (e) {}
+  };
+  stopSpeak = () => {
+    try {
+      window.speechSynthesis && window.speechSynthesis.cancel();
+    } catch (e) {}
+    if (this._audio && !this.state.muted) this._audio.volume = 0.6;
+  };
   startBgm = () => {
     const a = this._audio;
     if (!a || this.state.muted) return;
@@ -305,6 +340,8 @@ class Component extends DCLogic {
     ['pointerdown', 'touchstart', 'keydown'].forEach((ev) =>
       window.removeEventListener(ev, this._unlock)
     );
+    clearTimeout(this._st);
+    this.stopSpeak();
     if (this._audio) { this._audio.pause(); this._audio = null; }
   }
   renderVals() {
@@ -318,6 +355,7 @@ class Component extends DCLogic {
         const a = this._audio;
         const next = !s.muted;
         this.setState({ muted: next });
+        if (next) this.stopSpeak();
         if (!a) return;
         if (next) { a.pause(); }
         else { a.play().then(() => this.setState({ playing: true })).catch(() => {}); }
@@ -397,9 +435,11 @@ class Component extends DCLogic {
         }
         this.setState({ revealed: true });
         clearTimeout(this._ct);
+        clearTimeout(this._st);
         this._ct = setTimeout(() => this.setState({ confettiOn: true }), dur * 1000 + 300);
+        this._st = setTimeout(() => this.speakAnswer(s.answer), dur * 1000 + 200);
       },
-      refold: () => { clearTimeout(this._ct); this.setState({ revealed: false, confettiOn: false }); },
+      refold: () => { clearTimeout(this._ct); clearTimeout(this._st); this.stopSpeak(); this.setState({ revealed: false, confettiOn: false }); },
       goCompose: () => this.setState({ screen: 'compose' }),
       goStage: () => this.setState({ screen: 'stage', phase: 'bowl', ballOpen: false, revealed: false, confettiOn: false, answer: '무조건 치킨.' }),
       makeLink: () => {
