@@ -36,10 +36,11 @@ textarea::placeholder{color:rgba(16,26,77,.3);font-family:'Noto Serif KR',serif;
 @keyframes beamFlash{0%,100%{opacity:.25}12%{opacity:1}30%{opacity:.4}50%{opacity:.95}68%{opacity:.35}85%{opacity:.9}}
 @keyframes hueSpin{0%{filter:blur(7px) hue-rotate(0deg)}100%{filter:blur(7px) hue-rotate(360deg)}}
 @keyframes ballRise{0%{transform:translateY(150px) scale(.32);opacity:0}55%{opacity:1}100%{transform:translateY(0) scale(1);opacity:1}}
-@keyframes paperIn{0%{transform:scale(.45) translateY(24px);opacity:0}100%{transform:scale(1) translateY(0);opacity:1}}
+@keyframes paperIn{0%{transform:scale(.62);opacity:.25}100%{transform:scale(1);opacity:1}}
 @keyframes lottoA{0%{transform:translate(0,0) rotate(0)}25%{transform:translate(78px,-72px) rotate(90deg)}50%{transform:translate(140px,-8px) rotate(200deg)}75%{transform:translate(58px,-96px) rotate(280deg)}100%{transform:translate(0,0) rotate(360deg)}}
 @keyframes lottoB{0%{transform:translate(0,0) rotate(0)}30%{transform:translate(-64px,-80px) rotate(-120deg)}55%{transform:translate(-110px,-6px) rotate(-190deg)}80%{transform:translate(-40px,-104px) rotate(-300deg)}100%{transform:translate(0,0) rotate(-360deg)}}
 @keyframes lottoC{0%{transform:translate(0,0) rotate(0)}20%{transform:translate(40px,-100px) rotate(140deg)}45%{transform:translate(-52px,-58px) rotate(220deg)}70%{transform:translate(66px,-30px) rotate(300deg)}100%{transform:translate(0,0) rotate(360deg)}}
+@keyframes nudge{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(2px)}}
 @keyframes fadeUp{0%{opacity:0;transform:translateY(24px)}100%{opacity:1;transform:translateY(0)}}
 @keyframes handInL{0%{transform:translate(-34px,74px) rotate(-12deg);opacity:0}100%{transform:rotate(5deg);opacity:1}}
 @keyframes handInR{0%{transform:scaleX(-1) translate(-34px,74px) rotate(-12deg);opacity:0}100%{transform:scaleX(-1) rotate(5deg);opacity:1}}
@@ -101,7 +102,7 @@ textarea::placeholder{color:rgba(16,26,77,.3);font-family:'Noto Serif KR',serif;
           </div>
         </sc-if>
         <sc-if value="{{ isBall }}" hint-placeholder-val="{{ false }}">
-          <div style="position:relative;width:170px;height:170px;animation:ballRise .8s cubic-bezier(.3,1.2,.4,1) both;cursor:pointer" onClick="{{ openBall }}">
+          <div style="position:relative;width:170px;height:170px;transition:{{ ballWrapTrans }};transform:{{ ballWrapT }};cursor:pointer" onClick="{{ openBall }}">
             <div style="position:absolute;left:50%;top:50%;width:80px;height:36px;transform:{{ slipPeekT }};margin-left:-40px;margin-top:-18px;background:#fdfcf8;border-radius:4px;box-shadow:0 6px 16px rgba(0,0,20,.35);transition:transform .5s ease .15s, opacity .4s ease .15s;opacity:{{ slipPeekO }};display:flex;align-items:center;justify-content:center">
               <div style="width:56px;height:2px;background:rgba(10,29,122,.15)"></div>
             </div>
@@ -110,42 +111,56 @@ textarea::placeholder{color:rgba(16,26,77,.3);font-family:'Noto Serif KR',serif;
           </div>
         </sc-if>
         <sc-if value="{{ isPaper }}" hint-placeholder-val="{{ true }}">
-        <div style="animation:paperIn .5s ease both">
+        <div style="animation:paperIn .55s cubic-bezier(.3,1.1,.4,1) both">
         <div style="animation:{{ idleAnim }}">
           <div style="position:relative;width:250px;height:176px;perspective:900px;transition:transform 1.1s cubic-bezier(.34,1.3,.4,1);transform:{{ paperLift }}">
-            <div style="position:absolute;left:0;bottom:0;width:250px;height:88px;background:linear-gradient(180deg,#fdfcf8 0%,#f1eee4 100%);border-radius:0 0 8px 8px;box-shadow:0 18px 40px rgba(0,0,10,.5)"></div>
+            <div style="position:absolute;left:0;bottom:0;width:250px;height:88px;background:linear-gradient(180deg,#fdfcf8 0%,#f1eee4 100%);border-radius:0 0 8px 8px;box-shadow:0 18px 40px rgba(0,0,10,.5)">
+              <div style="position:absolute;left:0;right:0;top:0;height:12px;background:linear-gradient(180deg,rgba(120,110,80,.2),rgba(120,110,80,0))"></div>
+              <div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:linear-gradient(180deg,rgba(120,110,80,.16),rgba(120,110,80,.04))"></div>
+              <div style="position:absolute;inset:0;border-radius:0 0 8px 8px;box-shadow:inset 0 -3px 7px rgba(120,110,80,.16), inset 2px 0 5px rgba(120,110,80,.09), inset -2px 0 5px rgba(120,110,80,.09)"></div>
+            </div>
             <div style="position:absolute;left:0;bottom:88px;width:250px;height:88px;transform-origin:bottom center;transform-style:preserve-3d;z-index:2;transition:{{ flapTransition }};transform:{{ flapTransform }}">
               <div style="position:absolute;inset:0;backface-visibility:hidden;background:linear-gradient(0deg,#fdfcf8 0%,#f8f5ec 100%);border-radius:8px 8px 0 0;border-bottom:1px solid rgba(10,29,122,.08);overflow:hidden">
                 <div style="position:absolute;left:0;right:0;top:0;height:26px;background:linear-gradient(100deg,#1b2c8f 0%,#2f3fa8 38%,#e0475e 58%,#27357f 82%,#1b2c8f 100%);display:flex;align-items:center;justify-content:space-between;padding:0 12px;box-sizing:border-box">
                   <span style="display:flex;align-items:center;gap:6px"><img src="assets/logo-cut.png" alt="" style="height:16px;width:auto;display:block"></img><span style="font-size:8px;letter-spacing:2px;color:#fff;font-weight:700">MY ANSWER IS</span></span>
                   <span style="font-size:8px;letter-spacing:1px;color:rgba(255,255,255,.85);font-family:'Noto Serif KR',serif;font-style:italic">DRAW '26</span>
                 </div>
+                <div style="position:absolute;left:50%;top:26px;bottom:0;width:1px;background:rgba(120,110,80,.1)"></div>
+                <div style="position:absolute;left:0;right:0;bottom:0;height:14px;background:linear-gradient(0deg,rgba(120,110,80,.18),rgba(120,110,80,0))"></div>
               </div>
-              <div style="position:absolute;inset:0;backface-visibility:hidden;transform:rotateX(180deg);background:#fdfcf8;border-radius:8px 8px 0 0;border:1px solid rgba(10,29,122,.15);box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px">
+              <div style="position:absolute;inset:0;backface-visibility:hidden;transform:rotateX(180deg);background:#fdfcf8;border-radius:8px 8px 0 0;border:1px solid rgba(10,29,122,.15);box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;box-shadow:inset 0 4px 9px rgba(120,110,80,.13), inset 0 -2px 5px rgba(120,110,80,.07)">
                 <img src="assets/logo-navy.png" alt="" style="width:64px;height:auto;display:block"></img>
                 <span style="font-size:9px;letter-spacing:3px;color:#0a1d7a;font-weight:700">MY ANSWER IS</span>
               </div>
             </div>
             <div style="position:absolute;inset:0;z-index:3;display:flex;align-items:center;justify-content:center;padding:34px 18px 16px;pointer-events:none;transition:{{ answerTransition }};opacity:{{ answerOpacity }};transform:{{ answerScale }}">
-              <p style="margin:0;font-family:'Noto Serif KR',serif;font-weight:900;font-size:25px;line-height:1.35;color:#101a4d;text-align:center;text-wrap:pretty;word-break:keep-all">{{ answer }}</p>
+              <p style="margin:0;font-family:'Noto Serif KR',serif;font-weight:900;font-size:{{ answerSize }}px;line-height:1.35;color:#101a4d;text-align:center;text-wrap:pretty;word-break:keep-all;overflow-wrap:anywhere">{{ answer }}</p>
             </div>
-            <svg width="88" height="110" viewBox="0 0 88 110" style="position:absolute;left:-34px;bottom:-30px;z-index:4;transition:transform 1.1s cubic-bezier(.34,1.3,.4,1);transform:{{ handL }};animation:handInL .55s cubic-bezier(.3,1.3,.4,1) .35s backwards">
+            <svg width="88" height="110" viewBox="0 0 88 110" style="position:absolute;left:-34px;bottom:-30px;z-index:1;transition:transform 1.1s cubic-bezier(.34,1.3,.4,1);transform:{{ handL }};animation:handInL .55s cubic-bezier(.3,1.3,.4,1) .35s backwards">
               <path d="M10 110 L4 76 Q2 62 18 60 L46 66 L50 110 Z" fill="#141d4e"></path>
               <ellipse cx="38" cy="54" rx="25" ry="21" fill="#e2a97c"></ellipse>
               <ellipse cx="56" cy="40" rx="8" ry="6" fill="#e2a97c"></ellipse>
               <ellipse cx="60" cy="50" rx="8" ry="6" fill="#dda172"></ellipse>
               <ellipse cx="58" cy="60" rx="8" ry="6" fill="#d69a6b"></ellipse>
-              <ellipse cx="64" cy="46" rx="9" ry="15" fill="#eab68a" transform="rotate(18 64 46)"></ellipse>
               <ellipse cx="34" cy="62" rx="14" ry="7" fill="rgba(0,0,0,.07)"></ellipse>
             </svg>
-            <svg width="88" height="110" viewBox="0 0 88 110" style="position:absolute;right:-34px;bottom:-30px;z-index:4;transition:transform 1.1s cubic-bezier(.34,1.3,.4,1);transform:{{ handR }};animation:handInR .55s cubic-bezier(.3,1.3,.4,1) .35s backwards">
+            <svg width="88" height="110" viewBox="0 0 88 110" style="position:absolute;left:-34px;bottom:-30px;z-index:5;pointer-events:none;transition:transform 1.1s cubic-bezier(.34,1.3,.4,1);transform:{{ handL }};animation:handInL .55s cubic-bezier(.3,1.3,.4,1) .35s backwards">
+              <ellipse cx="60" cy="52" rx="10" ry="16" fill="rgba(0,0,20,.12)" transform="rotate(24 60 52)"></ellipse>
+              <ellipse cx="61" cy="49" rx="9" ry="16" fill="#eab68a" transform="rotate(24 61 49)"></ellipse>
+              <ellipse cx="63" cy="42" rx="5" ry="7" fill="#f2c79c" transform="rotate(24 63 42)"></ellipse>
+            </svg>
+            <svg width="88" height="110" viewBox="0 0 88 110" style="position:absolute;right:-34px;bottom:-30px;z-index:1;transition:transform 1.1s cubic-bezier(.34,1.3,.4,1);transform:{{ handR }};animation:handInR .55s cubic-bezier(.3,1.3,.4,1) .35s backwards">
               <path d="M10 110 L4 76 Q2 62 18 60 L46 66 L50 110 Z" fill="#141d4e"></path>
               <ellipse cx="38" cy="54" rx="25" ry="21" fill="#e2a97c"></ellipse>
               <ellipse cx="56" cy="40" rx="8" ry="6" fill="#e2a97c"></ellipse>
               <ellipse cx="60" cy="50" rx="8" ry="6" fill="#dda172"></ellipse>
               <ellipse cx="58" cy="60" rx="8" ry="6" fill="#d69a6b"></ellipse>
-              <ellipse cx="64" cy="46" rx="9" ry="15" fill="#eab68a" transform="rotate(18 64 46)"></ellipse>
               <ellipse cx="34" cy="62" rx="14" ry="7" fill="rgba(0,0,0,.07)"></ellipse>
+            </svg>
+            <svg width="88" height="110" viewBox="0 0 88 110" style="position:absolute;right:-34px;bottom:-30px;z-index:5;pointer-events:none;transition:transform 1.1s cubic-bezier(.34,1.3,.4,1);transform:{{ handR }};animation:handInR .55s cubic-bezier(.3,1.3,.4,1) .35s backwards">
+              <ellipse cx="60" cy="52" rx="10" ry="16" fill="rgba(0,0,20,.12)" transform="rotate(24 60 52)"></ellipse>
+              <ellipse cx="61" cy="49" rx="9" ry="16" fill="#eab68a" transform="rotate(24 61 49)"></ellipse>
+              <ellipse cx="63" cy="42" rx="5" ry="7" fill="#f2c79c" transform="rotate(24 63 42)"></ellipse>
             </svg>
           </div>
         </div>
@@ -169,19 +184,26 @@ textarea::placeholder{color:rgba(16,26,77,.3);font-family:'Noto Serif KR',serif;
   <sc-if value="{{ isDone }}" hint-placeholder-val="{{ false }}">
     <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:26px 24px 34px;position:relative;overflow:hidden">
       <div style="position:absolute;left:50%;top:50%;width:320px;height:520px;transform:translate(-50%,-50%)">
-      <div style="position:absolute;left:10px;top:40px;width:300px;transition:transform .5s cubic-bezier(.5,0,.4,1), opacity .35s ease;transform:{{ crumplePaperT }};opacity:{{ crumplePaperO }};background:linear-gradient(180deg,#fdfcf8,#f1eee4);border-radius:10px;box-shadow:0 16px 36px rgba(0,0,20,.4);overflow:hidden">
-        <div style="height:26px;background:linear-gradient(100deg,#1b2c8f 0%,#2f3fa8 38%,#e0475e 58%,#27357f 82%,#1b2c8f 100%);display:flex;align-items:center;justify-content:space-between;padding:0 12px;box-sizing:border-box">
-          <span style="display:flex;align-items:center;gap:6px"><img src="assets/logo-cut.png" alt="" style="height:16px;width:auto;display:block"></img><span style="font-size:8px;letter-spacing:2px;color:#fff;font-weight:700">MY ANSWER IS</span></span>
-          <span style="font-size:8px;letter-spacing:1px;color:rgba(255,255,255,.85);font-family:'Noto Serif KR',serif;font-style:italic">DRAW '26</span>
+      <div style="position:absolute;left:10px;top:{{ sendTop }};width:300px;height:160px;perspective:900px;transform-origin:50% 25%;transition:transform .6s cubic-bezier(.6,0,.4,1), opacity .3s ease;transform:{{ sendT }};opacity:{{ sendO }}">
+        <div style="position:absolute;left:0;top:0;width:300px;height:80px;overflow:hidden;border-radius:10px 10px 0 0;box-shadow:0 16px 36px rgba(0,0,20,.4)">
+          <div style="position:absolute;left:0;top:0;width:300px;height:160px;background:linear-gradient(180deg,#fdfcf8,#f1eee4)">
+            <div style="height:26px;background:linear-gradient(100deg,#1b2c8f 0%,#2f3fa8 38%,#e0475e 58%,#27357f 82%,#1b2c8f 100%);display:flex;align-items:center;justify-content:space-between;padding:0 12px;box-sizing:border-box">
+              <span style="display:flex;align-items:center;gap:6px"><img src="assets/logo-cut.png" alt="" style="height:16px;width:auto;display:block"></img><span style="font-size:8px;letter-spacing:2px;color:#fff;font-weight:700">MY ANSWER IS</span></span>
+              <span style="font-size:8px;letter-spacing:1px;color:rgba(255,255,255,.85);font-family:'Noto Serif KR',serif;font-style:italic">DRAW '26</span>
+            </div>
+            <p style="margin:0;padding:16px 18px;font-family:'Noto Serif KR',serif;font-weight:900;font-size:{{ aPreviewSize }}px;line-height:1.45;color:#101a4d;text-align:center;text-wrap:pretty;word-break:keep-all;overflow-wrap:anywhere">{{ aPreview }}</p>
+          </div>
         </div>
-        <p style="margin:0;padding:20px 18px;font-family:'Noto Serif KR',serif;font-weight:900;font-size:20px;line-height:1.45;color:#101a4d;text-align:center;text-wrap:pretty;word-break:keep-all;overflow:hidden;max-height:120px">{{ aPreview }}</p>
+        <div style="position:absolute;left:0;top:80px;width:300px;height:80px;transform-origin:top center;transform-style:preserve-3d;transition:transform .65s cubic-bezier(.55,0,.35,1);transform:{{ foldT }}">
+          <div style="position:absolute;inset:0;overflow:hidden;backface-visibility:hidden;border-radius:0 0 10px 10px;box-shadow:0 16px 36px rgba(0,0,20,.4)">
+            <div style="position:absolute;left:0;top:-80px;width:300px;height:160px;background:linear-gradient(180deg,#fdfcf8,#f1eee4)">
+              <div style="height:26px"></div>
+              <p style="margin:0;padding:16px 18px;font-family:'Noto Serif KR',serif;font-weight:900;font-size:{{ aPreviewSize }}px;line-height:1.45;color:#101a4d;text-align:center;text-wrap:pretty;word-break:keep-all;overflow-wrap:anywhere">{{ aPreview }}</p>
+            </div>
+          </div>
+          <div style="position:absolute;inset:0;backface-visibility:hidden;transform:rotateX(180deg);background:linear-gradient(180deg,#f3f0e6,#e7e3d4);border-radius:10px 10px 0 0;box-shadow:inset 0 2px 7px rgba(120,110,80,.18)"></div>
+        </div>
       </div>
-      <svg width="96" height="92" viewBox="0 0 96 92" style="position:absolute;left:112px;top:74px;transition:{{ crumpleBallTrans }};transform:{{ crumpleBallT }};opacity:{{ crumpleBallO }};filter:drop-shadow(0 12px 22px rgba(0,0,20,.4))">
-        <path d="M22 14 L44 4 L66 10 L84 22 L92 44 L86 66 L68 84 L44 90 L20 82 L6 62 L4 38 Z" fill="#f4f1e6"></path>
-        <path d="M22 14 L38 30 L44 4 M66 10 L52 32 L84 22 M92 44 L64 46 L86 66 M68 84 L56 58 L44 90 M20 82 L34 56 L6 62 M4 38 L30 42 L22 14" fill="none" stroke="#d4cdb9" stroke-width="1.6"></path>
-        <path d="M38 30 L52 32 L64 46 L56 58 L34 56 L30 42 Z" fill="#e9e4d4"></path>
-        <path d="M44 4 L52 32 L38 30 Z M86 66 L56 58 L64 46 Z" fill="#efeadb"></path>
-      </svg>
       <div style="position:absolute;left:85px;top:340px;width:150px;height:150px;transition:{{ capTrans }};transform:{{ capT }}">
         <div style="position:absolute;left:0;top:0;width:150px;height:75px;border-radius:150px 150px 0 0;background:radial-gradient(circle at 52px 45px,#ffffff,#d3dae8 60%,#a9b4c9);transition:transform .5s cubic-bezier(.5,0,.3,1);transform:{{ capTopT }};box-shadow:0 10px 26px rgba(0,0,20,.3)"></div>
         <div style="position:absolute;left:0;top:75px;width:150px;height:75px;border-radius:0 0 150px 150px;background:radial-gradient(circle at 52px -30px,#f2f5fa,#c7cfdf 60%,#9aa6bd);box-shadow:0 16px 30px rgba(0,0,20,.4)"></div>
@@ -207,14 +229,14 @@ textarea::placeholder{color:rgba(16,26,77,.3);font-family:'Noto Serif KR',serif;
       </div>
       <h1 style="margin:10px 0 0;font-size:27px;font-weight:700;line-height:1.35;text-align:center;letter-spacing:-0.3px">나만의 답변 <span style="color:#8db6ff">만들기</span></h1>
       <p style="margin:-10px 0 0;font-size:13px;line-height:1.6;color:rgba(255,255,255,.55);text-align:center;text-wrap:pretty">종이 안에 넣을 답변을 쓰면 링크가 만들어져요</p>
-      <div style="margin:6px auto 0;width:100%;max-width:300px;background:linear-gradient(180deg,#fdfcf8,#f1eee4);border-radius:10px;box-shadow:0 16px 36px rgba(0,0,20,.4);overflow:hidden">
+      <div style="margin:6px auto 0;width:100%;max-width:300px;background:linear-gradient(180deg,#fdfcf8,#f1eee4);border-radius:10px;box-shadow:0 16px 36px rgba(0,0,20,.4);overflow:hidden;animation:{{ composeAnim }}">
         <div style="height:26px;background:linear-gradient(100deg,#1b2c8f 0%,#2f3fa8 38%,#e0475e 58%,#27357f 82%,#1b2c8f 100%);display:flex;align-items:center;justify-content:space-between;padding:0 12px;box-sizing:border-box">
           <span style="display:flex;align-items:center;gap:6px"><img src="assets/logo-cut.png" alt="" style="height:16px;width:auto;display:block"></img><span style="font-size:8px;letter-spacing:2px;color:#fff;font-weight:700">MY ANSWER IS</span></span>
           <span style="font-size:8px;letter-spacing:1px;color:rgba(255,255,255,.85);font-family:'Noto Serif KR',serif;font-style:italic">DRAW '26</span>
         </div>
         <textarea value="{{ aInput }}" onChange="{{ onA }}" rows="4" placeholder="여기에 답변을 적어보세요" style="display:block;width:100%;box-sizing:border-box;padding:20px 18px;border:none;background:transparent;color:#101a4d;font-family:'Noto Serif KR',serif;font-weight:900;font-size:20px;line-height:1.45;text-align:center;resize:none;outline:none"></textarea>
       </div>
-      <button onClick="{{ makeLink }}" style="margin-top:2px;padding:17px;border:none;border-radius:999px;background:linear-gradient(135deg,#6ea8ff,#2f6bff);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 10px 28px rgba(47,107,255,.45)" style-hover="filter:brightness(1.08)" style-active="transform:scale(.98)">링크 만들기</button>
+      <button onClick="{{ makeLink }}" style="margin-top:2px;padding:17px;border:none;border-radius:999px;background:linear-gradient(135deg,#6ea8ff,#2f6bff);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:16px;font-weight:700;cursor:{{ submitCursor }};opacity:{{ submitOpacity }};transition:opacity .25s ease;box-shadow:0 10px 28px rgba(47,107,255,.45)" style-hover="filter:brightness(1.08)" style-active="transform:scale(.98)">링크 만들기</button>
       <p style="margin:-8px 0 0;font-size:10.5px;line-height:1.5;color:rgba(255,255,255,.4);text-align:center">링크를 받은 친구가 종이를 펼치면 답변이 공개됩니다</p>
       <div style="flex:1"></div>
     </div>
@@ -229,7 +251,7 @@ class Component extends DCLogic {
       screen: 'compose', phase: 'bowl', ballOpen: false, revealed: false, confettiOn: false,
       answer: '무조건 치킨.',
       aInput: '', link: '', copied: false,
-      muted: false, playing: false
+      muted: false, playing: false, nudge: false
     };
     const colors = ['#e8c877', '#f5dfa3', '#ffffff', '#7ea0ff'];
     this.confettiPieces = Array.from({length: 22}, (_, i) => ({
@@ -256,7 +278,11 @@ class Component extends DCLogic {
       window.removeEventListener('pointermove', move);
       window.removeEventListener('pointerup', up);
       const lifted = this._dragStartY - ev.clientY > 70;
-      this.setState(lifted ? { drag: null, phase: 'ball', ballOpen: false } : { drag: null });
+      if (lifted) {
+        this.setState({ drag: null, phase: 'ball', ballOpen: false, ballEntered: false, ballFrom: { x: ev.clientX - r.left - 125, y: ev.clientY - r.top - 105 } });
+        clearTimeout(this._be);
+        this._be = setTimeout(() => this.setState({ ballEntered: true }), 40);
+      } else this.setState({ drag: null });
     };
     window.addEventListener('pointermove', move);
     window.addEventListener('pointerup', up);
@@ -345,6 +371,15 @@ class Component extends DCLogic {
     if (this._audio) { this._audio.pause(); this._audio = null; }
   }
   renderVals() {
+    // Shrink long answers so they stay inside the paper.
+    const fitSize = (text, max, boxH) => {
+      const n = (text || '').length;
+      if (n <= 12) return max;
+      if (n <= 20) return Math.round(max * 0.84);
+      if (n <= 32) return Math.round(max * 0.68);
+      if (n <= 48) return Math.round(max * 0.56);
+      return Math.round(max * 0.46);
+    };
     const s = this.state;
     const dur = this.props.unfoldSeconds ?? 1.1;
     const confettiEnabled = this.props.confetti ?? true;
@@ -365,11 +400,17 @@ class Component extends DCLogic {
       isDone: s.screen === 'done',
       doneLink: s.donePhase === 'link',
       aPreview: (s.aInput || '').trim(),
-      crumplePaperT: s.donePhase === 'paper' ? 'none' : s.donePhase === 'grab' ? 'scale(.9) rotate(-4deg)' : 'scale(.16) rotate(30deg)',
-      crumplePaperO: s.donePhase === 'paper' || s.donePhase === 'grab' ? 1 : 0,
-      crumpleBallT: s.donePhase === 'crumple' ? 'scale(1)' : (s.donePhase === 'paper' || s.donePhase === 'grab') ? 'scale(.2)' : 'translate(0,295px) scale(.5)',
-      crumpleBallO: s.donePhase === 'crumple' || s.donePhase === 'insert' ? 1 : 0,
-      crumpleBallTrans: s.donePhase === 'insert' ? 'transform .55s cubic-bezier(.5,0,.5,1), opacity .25s ease' : 'transform .4s ease, opacity .25s ease',
+      canSubmit: !!(s.aInput || '').trim(),
+      composeAnim: s.nudge ? 'nudge .4s ease' : 'none',
+      submitOpacity: (s.aInput || '').trim() ? 1 : 0.45,
+      submitCursor: (s.aInput || '').trim() ? 'pointer' : 'not-allowed',
+      sendT: s.donePhase === 'paper' ? 'none'
+        : s.donePhase === 'grab' ? 'none'
+        : s.donePhase === 'crumple' ? 'scale(.94) rotate(-2deg)'
+        : 'translate(0,' + (415 - ((s.sendTop ?? 56) + 40)) + 'px) scale(.24) rotate(4deg)',
+      sendO: (s.donePhase === 'close' || s.donePhase === 'throw' || s.donePhase === 'link') ? 0 : 1,
+      sendTop: (s.sendTop ?? 56) + 'px',
+      foldT: s.donePhase === 'paper' ? 'rotateX(0deg)' : 'rotateX(-180deg)',
       capT: s.donePhase === 'throw' || s.donePhase === 'link' ? 'translateY(-1100px) rotate(560deg) scale(.6)' : 'none',
       capTrans: s.donePhase === 'throw' || s.donePhase === 'link' ? 'transform .9s cubic-bezier(.45,-.15,.65,1)' : 'transform .5s ease',
       capTopT: s.donePhase === 'close' || s.donePhase === 'throw' || s.donePhase === 'link' ? 'none' : 'translateY(-50px) rotate(-16deg)',
@@ -384,11 +425,15 @@ class Component extends DCLogic {
       dragTop: s.drag ? s.drag.y + 'px' : '0px',
       bowlDown: this.bowlDown,
       ctaLabel: s.phase === 'bowl' ? '공 뽑기' : s.phase === 'ball' ? '공 열기' : '종이 펼치기',
+      ballWrapT: s.ballEntered ? 'translate(0,0) scale(1)' : (s.ballFrom ? 'translate(' + s.ballFrom.x + 'px,' + s.ballFrom.y + 'px) scale(.31)' : 'translate(0,150px) scale(.32)'),
+      ballWrapTrans: s.ballEntered ? 'transform .7s cubic-bezier(.3,1.2,.4,1)' : 'none',
       ballTopT: s.ballOpen ? 'translateY(-70px) rotate(-12deg)' : 'none',
       ballBotT: s.ballOpen ? 'translateY(44px) rotate(8deg)' : 'none',
-      slipPeekT: s.ballOpen ? 'scale(1.15) translateY(-4px)' : 'scale(.55)',
+      slipPeekT: s.ballOpen ? 'scale(1.9) translateY(-6px)' : 'scale(.55)',
       slipPeekO: s.ballOpen ? 1 : 0,
       answer: s.answer,
+      answerSize: fitSize(s.answer, 25, 176),
+      aPreviewSize: fitSize((s.aInput || '').trim(), 20, 120),
       revealed: s.revealed, notRevealed: !s.revealed,
       showConfetti: s.confettiOn && confettiEnabled,
       confetti: this.confettiPieces,
@@ -417,7 +462,12 @@ class Component extends DCLogic {
       hasLink: !!s.link, linkUrl: s.link,
       copyLabel: s.copied ? '복사됨 ✓' : '링크 복사',
       onA: (e) => this.setState({ aInput: e.target.value, link: '' }),
-      pickBall: () => { if (s.phase === 'bowl') this.setState({ phase: 'ball', ballOpen: false }); },
+      pickBall: () => {
+        if (s.phase !== 'bowl') return;
+        this.setState({ phase: 'ball', ballOpen: false, ballEntered: false, ballFrom: null });
+        clearTimeout(this._be);
+        this._be = setTimeout(() => this.setState({ ballEntered: true }), 40);
+      },
       openBall: () => {
         if (s.ballOpen) return;
         this.setState({ ballOpen: true });
@@ -425,7 +475,12 @@ class Component extends DCLogic {
         this._bt = setTimeout(() => this.setState({ phase: 'paper' }), 800);
       },
       ctaAction: () => {
-        if (s.phase === 'bowl') { this.setState({ phase: 'ball', ballOpen: false }); return; }
+        if (s.phase === 'bowl') {
+          this.setState({ phase: 'ball', ballOpen: false, ballEntered: false, ballFrom: null });
+          clearTimeout(this._be);
+          this._be = setTimeout(() => this.setState({ ballEntered: true }), 40);
+          return;
+        }
         if (s.phase === 'ball') {
           if (s.ballOpen) return;
           this.setState({ ballOpen: true });
@@ -443,16 +498,28 @@ class Component extends DCLogic {
       goCompose: () => this.setState({ screen: 'compose' }),
       goStage: () => this.setState({ screen: 'stage', phase: 'bowl', ballOpen: false, revealed: false, confettiOn: false, answer: '무조건 치킨.' }),
       makeLink: () => {
-        if (!s.aInput.trim()) return;
+        if (!s.aInput.trim()) {
+          this.setState({ nudge: true });
+          clearTimeout(this._nz);
+          this._nz = setTimeout(() => this.setState({ nudge: false }), 500);
+          return;
+        }
         const url = location.href.split('#')[0] + '#' + this.b64encode(s.aInput.trim());
         clearTimeout(this._d0); clearTimeout(this._d1); clearTimeout(this._d2); clearTimeout(this._d3); clearTimeout(this._d4); clearTimeout(this._d5);
-        this.setState({ screen: 'done', donePhase: 'paper', link: url, copied: false });
+        let sendTop = 56;
+        const ta = document.querySelector('textarea');
+        if (ta && ta.parentElement) {
+          const cardTop = ta.parentElement.getBoundingClientRect().top;
+          const boxTop = Math.max(0, (window.innerHeight - 520) / 2);
+          sendTop = Math.min(200, Math.max(10, Math.round(cardTop - boxTop)));
+        }
+        this.setState({ screen: 'done', donePhase: 'paper', link: url, copied: false, sendTop });
         this._d0 = setTimeout(() => this.setState({ donePhase: 'grab' }), 450);
-        this._d1 = setTimeout(() => this.setState({ donePhase: 'crumple' }), 850);
-        this._d4 = setTimeout(() => this.setState({ donePhase: 'insert' }), 1400);
-        this._d5 = setTimeout(() => this.setState({ donePhase: 'close' }), 2050);
-        this._d2 = setTimeout(() => this.setState({ donePhase: 'throw' }), 2650);
-        this._d3 = setTimeout(() => this.setState({ donePhase: 'link' }), 3550);
+        this._d1 = setTimeout(() => this.setState({ donePhase: 'crumple' }), 1050);
+        this._d4 = setTimeout(() => this.setState({ donePhase: 'insert' }), 1600);
+        this._d5 = setTimeout(() => this.setState({ donePhase: 'close' }), 2250);
+        this._d2 = setTimeout(() => this.setState({ donePhase: 'throw' }), 2850);
+        this._d3 = setTimeout(() => this.setState({ donePhase: 'link' }), 3750);
       },
       copyLink: () => {
         navigator.clipboard && navigator.clipboard.writeText(s.link);
