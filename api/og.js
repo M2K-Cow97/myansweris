@@ -17,9 +17,24 @@ export default async function handler(req) {
   const flag = (searchParams.get('flag') || '').slice(0, 8);
   const code = (searchParams.get('code') || '').replace(/[^A-Z]/g, '').slice(0, 4);
 
-  // 이 폰트가 없으면 한글이 네모로 나온다
-  const fontUrl = 'https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/packages/pretendard/dist/public/static/alternative/Pretendard-Bold.otf';
-  const font = await fetch(fontUrl).then((r) => r.arrayBuffer());
+  // satori 는 woff2 를 못 읽는다 — otf 여야 한다.
+  // 폰트를 못 받으면 한글이 네모로 나오므로, 실패 시엔 이미지 자체를 포기하고
+  // 정적 카드로 넘긴다 (빈 응답보다 낫다).
+  const FONT_URL = 'https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/public/static/Pretendard-Bold.otf';
+  let font = null;
+  try {
+    const res = await fetch(FONT_URL);
+    if (res.ok) {
+      const buf = await res.arrayBuffer();
+      // OTTO / true / 0x00010000 만 유효. 404 HTML 을 폰트로 넘기면 500 이 난다.
+      const sig = new Uint8Array(buf.slice(0, 4));
+      const tag = String.fromCharCode(...sig);
+      if (tag === 'OTTO' || tag === 'true' || tag === '\u0000\u0001\u0000\u0000') font = buf;
+    }
+  } catch (e) {}
+  if (!font) {
+    return Response.redirect('https://myansweris.vercel.app/assets/og-lunch.jpg', 302);
+  }
 
   const stripes = [[4, 15], [22, 8], [42, 3], [62, -3], [82, -8], [95, -15]];
 
