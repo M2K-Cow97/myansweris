@@ -429,10 +429,10 @@ class Component extends DCLogic {
           content: {
             title: '점심 조추첨이 완료 되었습니다.',
             description: text + ' · 이의 제기는 받지 않습니다',
-            imageUrl: 'https://myansweris.vercel.app/api/og?menu=' + encodeURIComponent(menu)
+            imageUrl: 'https://myansweris.vercel.app/api/og?ratio=square&menu=' + encodeURIComponent(menu)
               + '&flag=' + encodeURIComponent(flag) + '&code=' + encodeURIComponent(code),
-            imageWidth: 1200,
-            imageHeight: 630,
+            imageWidth: 800,
+            imageHeight: 800,
             link: { mobileWebUrl: url, webUrl: url }
           },
           buttons: [
@@ -476,7 +476,15 @@ class Component extends DCLogic {
         if (hit) seeded = hit[0] + '\n' + hit[1] + ' (' + hit[2] + ')';
       } catch (e) {}
     }
-    this.setState({ answer: seeded || this.pickMenu() });
+    if (seeded) {
+      // 공유받은 결과를 확인하러 온 사람이다 — 추첨을 다시 보여줄 이유가 없다.
+      this.setState({
+        answer: seeded, phase: 'paper', ballOpen: true,
+        revealed: true, confettiOn: true, skipCeremony: true,
+      });
+    } else {
+      this.setState({ answer: this.pickMenu() });
+    }
   }
   componentWillUnmount() {
     ['pointerdown', 'touchstart', 'keydown'].forEach((ev) =>
@@ -537,7 +545,7 @@ class Component extends DCLogic {
       isPaper: s.phase === 'paper',
       stageTitle: s.phase === 'bowl' ? '공 하나를,' : s.phase === 'ball' ? '공 안에,' : '오늘 점심은,',
       stageTitleAccent: s.phase === 'bowl' ? '뽑아주세요.' : s.phase === 'ball' ? '종이가 있어요.' : '이걸로.',
-      stageSub: s.phase === 'bowl' ? '공을 위로 드래그해서 뽑아보세요' : s.phase === 'ball' ? '공을 열어서 확인해보세요' : '버튼을 누르면 오늘의 메뉴가 공개됩니다',
+      stageSub: s.skipCeremony ? '이미 뽑힌 결과입니다' : s.phase === 'bowl' ? '공을 위로 드래그해서 뽑아보세요' : s.phase === 'ball' ? '공을 열어서 확인해보세요' : '버튼을 누르면 오늘의 메뉴가 공개됩니다',
       dragging: !!s.drag,
       dragLeft: s.drag ? s.drag.x + 'px' : '0px',
       dragTop: s.drag ? s.drag.y + 'px' : '0px',
@@ -569,7 +577,7 @@ class Component extends DCLogic {
 
       idleAnim: s.revealed ? 'none' : 'slipIdle 3.4s ease-in-out infinite',
       flapTransform: s.revealed ? 'rotateX(0deg)' : 'rotateX(-180deg)',
-      flapTransition: 'transform ' + dur + 's cubic-bezier(.65,0,.25,1)',
+      flapTransition: s.skipCeremony ? 'none' : 'transform ' + dur + 's cubic-bezier(.65,0,.25,1)',
       paperLift: s.revealed ? 'scale(1.12) translateY(-14px)' : 'scale(1) translateY(6px)',
       handL: s.revealed ? 'translate(-6px, 4px) rotate(-4deg)' : 'rotate(5deg)',
       handR: s.revealed ? 'scaleX(-1) translate(-6px, 4px) rotate(-4deg)' : 'scaleX(-1) rotate(5deg)',
@@ -624,6 +632,7 @@ class Component extends DCLogic {
       refold: () => {
         clearTimeout(this._ct); clearTimeout(this._st); this.stopSpeak();
         if (location.hash) history.replaceState(null, '', location.pathname);
+        this.setState({ skipCeremony: false });
         this.setState({ revealed: false, confettiOn: false, phase: 'bowl', ballOpen: false, ballEntered: false, ballFrom: null, answer: this.pickMenu() });
       },
       goCompose: () => this.setState({ screen: 'compose' }),

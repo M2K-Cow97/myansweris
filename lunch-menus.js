@@ -90,6 +90,34 @@ function fitSlip() {
   }
 }
 
+// 결과를 화면에 앉힌다 (연출 없이 바로 쓸 수도 있다)
+function land(skipCeremony) {
+  const [name, flag, code] = current;
+  elName.textContent = name;
+  elCountry.textContent = flag + ' (' + code + ')';
+  elName.style.animation = 'none'; elCountry.style.animation = 'none';
+  void elName.offsetWidth;
+  if (skipCeremony) {
+    // 도장 애니메이션도 생략 — 이미 뽑힌 결과를 확인하러 온 사람이다
+    elName.style.animation = 'none'; elCountry.style.animation = 'none';
+  } else {
+    elName.style.animation = ''; elCountry.style.animation = '';
+  }
+  scene.src = STILL;
+  patch.classList.add('on');
+  slip.classList.add('on');
+  fitSlip();
+  btnStart.hidden = true;
+  btnStart.disabled = false;
+  rowAfter.hidden = false;
+  elTitle.innerHTML = '오늘 점심은, <span>이걸로.</span>';
+  elSub.textContent = skipCeremony ? '이미 뽑힌 결과입니다' : '번복은 불가능합니다';
+  recordDraw(name, flag, code, 'gif').then(() => todayLine(name)).then((line) => {
+    if (line) elHint.textContent = line;
+  });
+  if (!skipCeremony) speak(name);
+}
+
 function draw() {
   clearTimeout(timer);
   slip.classList.remove('on');
@@ -102,30 +130,9 @@ function draw() {
   elSub.textContent = '진행자가 캡슐을 여는 중입니다';
   scene.src = '';
   scene.src = GIF;
-  const seed = seededMenu();
-  if (seed) { current = seed; last = MENUS.indexOf(seed); }
-  else current = pick();
+  current = pick();
   timer = setTimeout(() => {
-    const [name, flag, code] = current;
-    elName.textContent = name;
-    elCountry.textContent = flag + ' (' + code + ')';
-    elName.style.animation = 'none'; elCountry.style.animation = 'none';
-    void elName.offsetWidth;
-    elName.style.animation = ''; elCountry.style.animation = '';
-    scene.src = STILL;          // GIF 반복을 끊고 정지 프레임으로 교체
-    patch.classList.add('on');
-    slip.classList.add('on');
-    fitSlip();
-    // 집계 기록 후 오늘의 순위 한 줄을 붙인다 (실패해도 화면엔 영향 없음)
-    recordDraw(name, flag, code, 'gif').then(() => todayLine(name)).then((line) => {
-      if (line) elHint.textContent = line;
-    });
-    btnStart.hidden = true;
-    btnStart.disabled = false;
-    rowAfter.hidden = false;
-    elTitle.innerHTML = '오늘 점심은, <span>이걸로.</span>';
-    elSub.textContent = '번복은 불가능합니다';
-    speak(name);
+    land(false);
   }, CEREMONY_MS);
 }
 
@@ -133,6 +140,17 @@ btnStart.addEventListener('click', () => {
   cover.classList.add('hide');
   draw();
 });
+
+// 공유받은 #메뉴 로 들어왔으면 추첨을 보여주지 않고 결과만 띄운다.
+(function showSharedResult() {
+  const seed = seededMenu();
+  if (!seed) return;
+  current = seed;
+  last = MENUS.indexOf(seed);
+  cover.classList.add('hide');
+  scene.src = STILL;
+  land(true);
+})();
 btnRedraw.addEventListener('click', () => {
   if (location.hash) history.replaceState(null, '', location.pathname);
   draw();
@@ -154,10 +172,10 @@ btnShare.addEventListener('click', () => {
         content: {
           title: '점심 조추첨이 완료 되었습니다.',
           description: text + ' · 이의 제기는 받지 않습니다',
-          imageUrl: 'https://myansweris.vercel.app/api/og?menu=' + encodeURIComponent(name)
+          imageUrl: 'https://myansweris.vercel.app/api/og?ratio=square&menu=' + encodeURIComponent(name)
             + '&flag=' + encodeURIComponent(flag) + '&code=' + encodeURIComponent(code),
-          imageWidth: 1200,
-          imageHeight: 630,
+          imageWidth: 800,
+          imageHeight: 800,
           link: { mobileWebUrl: url, webUrl: url }
         },
         buttons: [

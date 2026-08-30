@@ -16,6 +16,8 @@ export default async function handler(req) {
   const menu = (searchParams.get('menu') || '???').slice(0, 20);
   const flag = (searchParams.get('flag') || '').slice(0, 8);
   const code = (searchParams.get('code') || '').replace(/[^A-Z]/g, '').slice(0, 4);
+  // 카톡은 경로마다 비율이 다르다: 링크 붙여넣기는 가로형, 공유 버튼(feed)은 정사각형.
+  const square = searchParams.get('ratio') === 'square';
 
   // satori 는 woff2 를 못 읽는다 — otf 여야 한다.
   // 폰트를 못 받으면 한글이 네모로 나오므로, 실패 시엔 이미지 자체를 포기하고
@@ -67,7 +69,8 @@ export default async function handler(req) {
 
   // 1200x630 가로형. 링크 붙여넣기 경로가 이 비율을 쓴다.
   // 위아래가 잘려도 살아남도록 내용을 세로 중앙에 모은다.
-  const SW = 660, SH = 370;   // 스틸(400x224) 비율 유지
+  const W = square ? 800 : 1200, H = square ? 800 : 630;
+  const SW = square ? 720 : 660, SH = square ? 403 : 370;   // 스틸(400x224) 비율 유지
   const PX = 79 / 400 * SW, PY = 60 / 224 * SH;
   const PW = (222 - 79) / 400 * SW, PH = (124 - 60) / 224 * SH;
 
@@ -76,8 +79,9 @@ export default async function handler(req) {
       type: 'div',
       props: {
         style: {
-          width: '1200px', height: '630px', display: 'flex',
-          alignItems: 'center', justifyContent: 'center', gap: '54px',
+          width: W + 'px', height: H + 'px', display: 'flex',
+          flexDirection: square ? 'column' : 'row',
+          alignItems: 'center', justifyContent: 'center', gap: square ? '0' : '54px',
           background: 'linear-gradient(150deg,#12aede 0%,#1b2fae 38%,#3c1a9e 62%,#a01283 100%)',
           fontFamily: 'P', padding: '0 60px',
         },
@@ -88,7 +92,8 @@ export default async function handler(req) {
             props: {
               style: {
                 display: 'flex', flexDirection: 'column',
-                alignItems: 'flex-start', justifyContent: 'center',
+                alignItems: square ? 'center' : 'flex-start', justifyContent: 'center',
+                marginBottom: square ? '38px' : '0',
               },
               children: [
                 logo ? { type: 'img', props: { src: logo, width: 260, style: { marginBottom: '26px' } } } : null,
@@ -150,8 +155,8 @@ export default async function handler(req) {
       },
     },
     {
-      width: 1200,
-      height: 630,
+      width: W,
+      height: H,
       fonts: [{ name: 'P', data: font, style: 'normal', weight: 700 }],
       headers: { 'cache-control': 'public, max-age=31536000, immutable' },
     }
