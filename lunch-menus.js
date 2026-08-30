@@ -156,8 +156,8 @@ btnShare.addEventListener('click', () => {
           description: text + ' · 이의 제기는 받지 않습니다',
           imageUrl: 'https://myansweris.vercel.app/api/og?menu=' + encodeURIComponent(name)
             + '&flag=' + encodeURIComponent(flag) + '&code=' + encodeURIComponent(code),
-          imageWidth: 800,
-          imageHeight: 800,
+          imageWidth: 1200,
+          imageHeight: 630,
           link: { mobileWebUrl: url, webUrl: url }
         },
         buttons: [

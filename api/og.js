@@ -5,10 +5,10 @@ export const config = { runtime: 'edge' };
 // 종이에 앉힐 글자 수가 늘면 크기를 줄인다 (마르게리타피자까지 한 줄로)
 function menuSize(name) {
   const n = [...name].length;
-  if (n <= 3) return 34;
-  if (n <= 5) return 30;
-  if (n <= 7) return 25;
-  return 21;
+  if (n <= 3) return 30;
+  if (n <= 5) return 26;
+  if (n <= 7) return 22;
+  return 19;
 }
 
 export default async function handler(req) {
@@ -65,9 +65,9 @@ export default async function handler(req) {
     return Response.redirect('https://myansweris.vercel.app/assets/og-lunch.jpg', 302);
   }
 
-  // 스틸은 400x224. 800 폭에 맞추면 448 높이가 된다.
-  const SW = 720, SH = 403;   // 좌우 40px 여백
-  // 종이 흰 영역 (400x224 기준 x 79-222 / y 60-124) 을 이 배율로 옮긴다.
+  // 1200x630 가로형. 링크 붙여넣기 경로가 이 비율을 쓴다.
+  // 위아래가 잘려도 살아남도록 내용을 세로 중앙에 모은다.
+  const SW = 660, SH = 370;   // 스틸(400x224) 비율 유지
   const PX = 79 / 400 * SW, PY = 60 / 224 * SH;
   const PW = (222 - 79) / 400 * SW, PH = (124 - 60) / 224 * SH;
 
@@ -76,45 +76,54 @@ export default async function handler(req) {
       type: 'div',
       props: {
         style: {
-          width: '800px', height: '800px', display: 'flex',
-          flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          width: '1200px', height: '630px', display: 'flex',
+          alignItems: 'center', justifyContent: 'center', gap: '54px',
           background: 'linear-gradient(150deg,#12aede 0%,#1b2fae 38%,#3c1a9e 62%,#a01283 100%)',
-          fontFamily: 'P', padding: '0 40px',
+          fontFamily: 'P', padding: '0 60px',
         },
         children: [
-          logo ? {
-            type: 'img',
-            props: { src: logo, width: 260, style: { marginBottom: '26px' } },
-          } : null,
-          {
-            type: 'div',
-            props: {
-              style: { display: 'flex', fontSize: '46px', color: '#fff', letterSpacing: '-1.4px' },
-              children: [
-                { type: 'div', props: { children: '오늘 점심은,\u00A0' } },
-                { type: 'div', props: { style: { color: '#8db6ff' }, children: '이걸로.' } },
-              ],
-            },
-          },
-          {
-            type: 'div',
-            props: {
-              style: { fontSize: '20px', color: 'rgba(255,255,255,.55)', marginTop: '14px' },
-              children: '번복은 불가능합니다',
-            },
-          },
+          // 왼쪽: 로고와 문구
           {
             type: 'div',
             props: {
               style: {
-                position: 'relative', display: 'flex', marginTop: '46px',
+                display: 'flex', flexDirection: 'column',
+                alignItems: 'flex-start', justifyContent: 'center',
+              },
+              children: [
+                logo ? { type: 'img', props: { src: logo, width: 260, style: { marginBottom: '26px' } } } : null,
+                {
+                  type: 'div',
+                  props: {
+                    style: { display: 'flex', fontSize: '46px', color: '#fff', letterSpacing: '-1.4px' },
+                    children: [
+                      { type: 'div', props: { children: '오늘 점심은,\u00A0' } },
+                      { type: 'div', props: { style: { color: '#8db6ff' }, children: '이걸로.' } },
+                    ],
+                  },
+                },
+                {
+                  type: 'div',
+                  props: {
+                    style: { fontSize: '21px', color: 'rgba(255,255,255,.55)', marginTop: '14px' },
+                    children: '번복은 불가능합니다',
+                  },
+                },
+              ].filter(Boolean),
+            },
+          },
+          // 오른쪽: 뽑은 카드
+          {
+            type: 'div',
+            props: {
+              style: {
+                position: 'relative', display: 'flex',
                 width: SW + 'px', height: SH + 'px',
                 borderRadius: '16px', overflow: 'hidden',
                 boxShadow: '0 20px 46px rgba(0,0,20,.45)',
               },
               children: [
                 { type: 'img', props: { src: still, width: SW, height: SH } },
-                // 원본 카드에 박힌 "Manchester United FC (ENG)" 를 덮는 패치
                 {
                   type: 'div',
                   props: {
@@ -129,7 +138,7 @@ export default async function handler(req) {
                     children: [
                       { type: 'div', props: { style: { fontSize: menuSize(menu) + 'px', letterSpacing: '-0.5px' }, children: menu } },
                       (flag || code)
-                        ? { type: 'div', props: { style: { fontSize: '20px', marginTop: '4px' }, children: (flag ? flag + ' ' : '') + (code ? '(' + code + ')' : '') } }
+                        ? { type: 'div', props: { style: { fontSize: '18px', marginTop: '4px' }, children: (flag ? flag + ' ' : '') + (code ? '(' + code + ')' : '') } }
                         : null,
                     ].filter(Boolean),
                   },
@@ -141,8 +150,8 @@ export default async function handler(req) {
       },
     },
     {
-      width: 800,
-      height: 800,
+      width: 1200,
+      height: 630,
       fonts: [{ name: 'P', data: font, style: 'normal', weight: 700 }],
       headers: { 'cache-control': 'public, max-age=31536000, immutable' },
     }
