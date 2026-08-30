@@ -356,8 +356,8 @@ class Component extends DCLogic {
       synth.cancel();
       const u = new SpeechSynthesisUtterance(say);
       u.lang = 'ko-KR';
-      u.rate = 1.02;
-      u.pitch = 1.4;   // 남성 보이스 상단 — 더 올리면 여성처럼 들린다
+      u.rate = 1.08;
+      u.pitch = 1.8;   // 밝고 들뜬 톤
       const v = this.pickVoice();
       if (!v) return;      // 남성 음성이 없으면 읽지 않는다
       u.voice = v;
