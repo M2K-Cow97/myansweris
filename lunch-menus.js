@@ -141,24 +141,6 @@ btnStart.addEventListener('click', () => {
   draw();
 });
 
-// 공유받은 #메뉴 로 들어왔으면 추첨을 보여주지 않고 결과만 띄운다.
-(function showSharedResult() {
-  const seed = seededMenu();
-  if (!seed) return;
-  current = seed;
-  last = MENUS.indexOf(seed);
-  cover.classList.add('hide');
-  scene.src = STILL;
-  land(true);
-  // 첫 조작 전에는 iOS 가 발화를 막는다 — 터치가 오면 한 번 더 읽는다.
-  const retry = () => {
-    window.removeEventListener('pointerdown', retry);
-    window.removeEventListener('touchstart', retry);
-    setTimeout(() => speak(seed[0]), 120);
-  };
-  window.addEventListener('pointerdown', retry, { once: true, passive: true });
-  window.addEventListener('touchstart', retry, { once: true, passive: true });
-})();
 btnRedraw.addEventListener('click', () => {
   if (location.hash) history.replaceState(null, '', location.pathname);
   draw();
@@ -274,3 +256,22 @@ function speak(text) {
   }
   go();
 }
+
+// 공유받은 #메뉴 로 들어왔으면 추첨을 보여주지 않고 결과만 띄운다.
+(function showSharedResult() {
+  const seed = seededMenu();
+  if (!seed) return;
+  current = seed;
+  last = MENUS.indexOf(seed);
+  cover.classList.add('hide');
+  scene.src = STILL;
+  land(true);
+  // 첫 조작 전에는 iOS 가 발화를 막는다 — 터치가 오면 한 번 더 읽는다.
+  const retry = () => {
+    window.removeEventListener('pointerdown', retry);
+    window.removeEventListener('touchstart', retry);
+    setTimeout(() => speak(seed[0]), 120);
+  };
+  window.addEventListener('pointerdown', retry, { once: true, passive: true });
+  window.addEventListener('touchstart', retry, { once: true, passive: true });
+})();
