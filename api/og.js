@@ -66,7 +66,7 @@ export default async function handler(req) {
   }
 
   // 스틸은 400x224. 800 폭에 맞추면 448 높이가 된다.
-  const SW = 800, SH = 448;
+  const SW = 720, SH = 403;   // 좌우 40px 여백
   // 종이 흰 영역 (400x224 기준 x 79-222 / y 60-124) 을 이 배율로 옮긴다.
   const PX = 79 / 400 * SW, PY = 60 / 224 * SH;
   const PW = (222 - 79) / 400 * SW, PH = (124 - 60) / 224 * SH;
@@ -84,14 +84,14 @@ export default async function handler(req) {
         children: [
           logo ? {
             type: 'img',
-            props: { src: logo, width: 250, style: { marginBottom: '18px' } },
+            props: { src: logo, width: 260, style: { marginBottom: '26px' } },
           } : null,
           {
             type: 'div',
             props: {
-              style: { display: 'flex', fontSize: '44px', color: '#fff', letterSpacing: '-1.4px' },
+              style: { display: 'flex', fontSize: '46px', color: '#fff', letterSpacing: '-1.4px' },
               children: [
-                { type: 'div', props: { children: '오늘 점심은, ' } },
+                { type: 'div', props: { children: '오늘 점심은,\u00A0' } },
                 { type: 'div', props: { style: { color: '#8db6ff' }, children: '이걸로.' } },
               ],
             },
@@ -99,7 +99,7 @@ export default async function handler(req) {
           {
             type: 'div',
             props: {
-              style: { fontSize: '21px', color: 'rgba(255,255,255,.55)', marginTop: '10px' },
+              style: { fontSize: '20px', color: 'rgba(255,255,255,.55)', marginTop: '14px' },
               children: '번복은 불가능합니다',
             },
           },
@@ -107,7 +107,7 @@ export default async function handler(req) {
             type: 'div',
             props: {
               style: {
-                position: 'relative', display: 'flex', marginTop: '38px',
+                position: 'relative', display: 'flex', marginTop: '46px',
                 width: SW + 'px', height: SH + 'px',
                 borderRadius: '16px', overflow: 'hidden',
                 boxShadow: '0 20px 46px rgba(0,0,20,.45)',
