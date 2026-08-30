@@ -165,7 +165,7 @@ btnShare.addEventListener('click', () => {
 
 /* ---- 배경음악: 답변 앱과 동일 규칙 (반복, 0.6, 첫 조작에 시작) ---- */
 const audio = new Audio('assets/champs.m4a');
-audio.loop = true; audio.volume = 0.6; audio.preload = 'auto';
+audio.loop = true; audio.volume = 0.45; audio.preload = 'auto';
 let muted = false;
 const startBgm = () => { if (!muted) audio.play().catch(() => {}); };
 startBgm();
@@ -192,7 +192,7 @@ function pickVoice() {
 }
 function stopSpeak() {
   try { speechSynthesis.cancel(); } catch (e) {}
-  if (!muted) audio.volume = 0.6;
+  if (!muted) audio.volume = 0.45;
 }
 // iOS는 사용자 제스처 안에서 speak() 를 한 번 거쳐야 이후 재생을 허용한다.
 let speechPrimed = false;
@@ -222,8 +222,8 @@ function speak(text) {
       u.lang = 'ko-KR'; u.rate = 0.9; u.pitch = 1.4;
       const v = pickVoice();
       if (v) u.voice = v;           // 못 찾아도 기본 음성으로 읽는다
-      const restore = () => { if (!muted) audio.volume = 0.6; };
-      audio.volume = 0.15;
+      const restore = () => { if (!muted) audio.volume = 0.45; };
+      audio.volume = 0.12;
       u.onend = restore; u.onerror = restore;
       speechSynthesis.speak(u);
     } catch (e) {}
