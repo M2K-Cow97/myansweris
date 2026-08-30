@@ -5,10 +5,10 @@ export const config = { runtime: 'edge' };
 // 종이에 앉힐 글자 수가 늘면 크기를 줄인다 (마르게리타피자까지 한 줄로)
 function menuSize(name) {
   const n = [...name].length;
-  if (n <= 4) return 60;
-  if (n <= 6) return 50;
-  if (n <= 8) return 42;
-  return 36;
+  if (n <= 3) return 34;
+  if (n <= 5) return 30;
+  if (n <= 7) return 25;
+  return 21;
 }
 
 export default async function handler(req) {
@@ -49,7 +49,27 @@ export default async function handler(req) {
     }
   } catch (e) {}
 
-  const stripes = [[4, 15], [22, 8], [42, 3], [62, -3], [82, -8], [95, -15]];
+  // 실제 화면 그대로: 정지 프레임 위에 종이를 얹는다.
+  let still = null;
+  try {
+    const r = await fetch('https://myansweris.vercel.app/assets/lunch-still.png');
+    if (r.ok) {
+      const b = await r.arrayBuffer();
+      let bin = '';
+      const bytes = new Uint8Array(b);
+      for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+      still = 'data:image/png;base64,' + btoa(bin);
+    }
+  } catch (e) {}
+  if (!still) {
+    return Response.redirect('https://myansweris.vercel.app/assets/og-lunch.jpg', 302);
+  }
+
+  // 스틸은 400x224. 800 폭에 맞추면 448 높이가 된다.
+  const SW = 800, SH = 448;
+  // 종이 흰 영역 (400x224 기준 x 79-222 / y 60-124) 을 이 배율로 옮긴다.
+  const PX = 79 / 400 * SW, PY = 60 / 224 * SH;
+  const PW = (222 - 79) / 400 * SW, PH = (124 - 60) / 224 * SH;
 
   return new ImageResponse(
     {
@@ -59,112 +79,61 @@ export default async function handler(req) {
           width: '800px', height: '800px', display: 'flex',
           flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           background: 'linear-gradient(150deg,#12aede 0%,#1b2fae 38%,#3c1a9e 62%,#a01283 100%)',
-          fontFamily: 'P', position: 'relative', padding: '0 56px',
+          fontFamily: 'P', padding: '0 40px',
         },
         children: [
-          ...stripes.map(([l, r]) => ({
-            type: 'div',
-            props: {
-              style: {
-                position: 'absolute', top: '-20%', left: l + '%', width: '110px', height: '150%',
-                background: 'linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.10) 50%,rgba(255,255,255,0))',
-                transform: 'rotate(' + r + 'deg)',
-              },
-            },
-          })),
           logo ? {
             type: 'img',
-            props: { src: logo, width: 270, style: { marginBottom: '34px' } },
+            props: { src: logo, width: 250, style: { marginBottom: '18px' } },
           } : null,
           {
             type: 'div',
             props: {
-              style: {
-                display: 'flex', flexDirection: 'column', alignItems: 'center',
-                fontSize: '50px', color: '#fff', letterSpacing: '-1.6px',
-                lineHeight: 1.28, textAlign: 'center', marginBottom: '44px',
-              },
+              style: { display: 'flex', fontSize: '44px', color: '#fff', letterSpacing: '-1.4px' },
               children: [
-                { type: 'div', props: { children: '점심 조추첨이' } },
-                { type: 'div', props: { children: '완료되었습니다' } },
+                { type: 'div', props: { children: '오늘 점심은, ' } },
+                { type: 'div', props: { style: { color: '#8db6ff' }, children: '이걸로.' } },
               ],
             },
           },
           {
             type: 'div',
             props: {
-              style: { position: 'relative', display: 'flex' },
-              children: [{
+              style: { fontSize: '21px', color: 'rgba(255,255,255,.55)', marginTop: '10px' },
+              children: '번복은 불가능합니다',
+            },
+          },
+          {
             type: 'div',
             props: {
               style: {
-                width: '470px', display: 'flex', flexDirection: 'column',
-                borderRadius: '14px', overflow: 'hidden',
-                background: 'linear-gradient(180deg,#fdfcf8,#f1eee4)',
-                boxShadow: '0 22px 50px rgba(0,0,20,.45)',
+                position: 'relative', display: 'flex', marginTop: '38px',
+                width: SW + 'px', height: SH + 'px',
+                borderRadius: '16px', overflow: 'hidden',
+                boxShadow: '0 20px 46px rgba(0,0,20,.45)',
               },
               children: [
+                { type: 'img', props: { src: still, width: SW, height: SH } },
+                // 원본 카드에 박힌 "Manchester United FC (ENG)" 를 덮는 패치
                 {
                   type: 'div',
                   props: {
                     style: {
-                      height: '42px', display: 'flex', alignItems: 'center',
-                      justifyContent: 'space-between', padding: '0 18px',
-                      background: 'linear-gradient(100deg,#1b2c8f 0%,#2f3fa8 38%,#e0475e 58%,#27357f 82%,#1b2c8f 100%)',
+                      position: 'absolute', left: (PX - 4) + 'px', top: (PY - 4) + 'px',
+                      width: (PW + 8) + 'px', height: (PH + 8) + 'px',
+                      display: 'flex', flexDirection: 'column',
+                      alignItems: 'center', justifyContent: 'center',
+                      background: 'linear-gradient(177deg,#f7f7f5 0%,#f0f0ee 52%,#e7e7e5 100%)',
+                      transform: 'rotate(-0.9deg)', color: '#20242c',
                     },
                     children: [
-                      { type: 'div', props: { style: { color: '#fff', fontSize: '13px', letterSpacing: '2.5px' }, children: 'MY ANSWER IS' } },
-                      { type: 'div', props: { style: { color: 'rgba(255,255,255,.85)', fontSize: '13px' }, children: "DRAW '26" } },
-                    ],
-                  },
-                },
-                {
-                  type: 'div',
-                  props: {
-                    style: {
-                      display: 'flex', flexDirection: 'column', alignItems: 'center',
-                      padding: '30px 20px 34px', color: '#101a4d',
-                    },
-                    children: [
-                      { type: 'div', props: { style: { fontSize: menuSize(menu) + 'px', letterSpacing: '-1px' }, children: menu } },
+                      { type: 'div', props: { style: { fontSize: menuSize(menu) + 'px', letterSpacing: '-0.5px' }, children: menu } },
                       (flag || code)
-                        ? { type: 'div', props: { style: { fontSize: '24px', marginTop: '8px' }, children: (flag ? flag + ' ' : '') + (code ? '(' + code + ')' : '') } }
+                        ? { type: 'div', props: { style: { fontSize: '20px', marginTop: '4px' }, children: (flag ? flag + ' ' : '') + (code ? '(' + code + ')' : '') } }
                         : null,
                     ].filter(Boolean),
                   },
                 },
-              ],
-            },
-          },
-          {
-            type: 'div',
-            props: {
-              style: {
-                position: 'absolute', right: '-62px', bottom: '-46px',
-                width: '162px', height: '162px', display: 'flex',
-                flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                border: '7px solid #c0392b', borderRadius: '81px',
-                transform: 'rotate(-16deg)', opacity: 0.92,
-              },
-              children: [
-                { type: 'div', props: { style: { color: '#c0392b', fontSize: '42px', letterSpacing: '2px' }, children: '확정' } },
-                { type: 'div', props: { style: { color: '#c0392b', fontSize: '15px', letterSpacing: '3px', marginTop: '6px' }, children: '번복불가' } },
-              ],
-            },
-          },
-              ],
-            },
-          },
-          {
-            type: 'div',
-            props: {
-              style: {
-                display: 'flex', flexDirection: 'column', alignItems: 'center',
-                marginTop: '52px', color: 'rgba(255,255,255,.72)', fontSize: '21px', textAlign: 'center',
-              },
-              children: [
-                { type: 'div', props: { children: '이의 제기는 받지 않습니다' } },
-                { type: 'div', props: { children: '재추첨 신청 반려됨' } },
               ],
             },
           },
