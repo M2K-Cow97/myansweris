@@ -141,7 +141,7 @@ window.addEventListener('resize', () => { if (slip.classList.contains('on')) fit
 
 btnShare.addEventListener('click', () => {
   if (!current) return;
-  const [name, flag] = current;
+  const [name, flag, code] = current;
   const text = '오늘 점심은 ' + name + ' ' + flag;
   const base = location.href.split('#')[0];
   const resultUrl = base + '#' + b64encode(name);
@@ -154,7 +154,8 @@ btnShare.addEventListener('click', () => {
         content: {
           title: '점심 조추첨이 완료 되었습니다.',
           description: text + ' · 이의 제기는 받지 않습니다',
-          imageUrl: 'https://myansweris.vercel.app/assets/og-lunch.jpg',
+          imageUrl: 'https://myansweris.vercel.app/api/og?menu=' + encodeURIComponent(name)
+            + '&flag=' + encodeURIComponent(flag) + '&code=' + encodeURIComponent(code),
           imageWidth: 800,
           imageHeight: 800,
           link: { mobileWebUrl: url, webUrl: url }

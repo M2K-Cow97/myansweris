@@ -416,6 +416,7 @@ class Component extends DCLogic {
     // 종이엔 "메뉴\n국기 (코드)" 로 들어있다. 공유 문구엔 메뉴 + 국기까지만.
     const [menu, tail] = String(this.state.answer || '').split('\n');
     const flag = (tail || '').split(' ')[0];
+    const code = (tail || '').replace(/[^A-Z]/g, '');
     const text = '오늘 점심은 ' + menu + (flag ? ' ' + flag : '');
     const base = location.href.split('#')[0];
     const resultUrl = base + '#' + this.b64encode(menu);   // 메뉴명만 담아 링크를 짧게
@@ -428,7 +429,8 @@ class Component extends DCLogic {
           content: {
             title: '점심 조추첨이 완료 되었습니다.',
             description: text + ' · 이의 제기는 받지 않습니다',
-            imageUrl: 'https://myansweris.vercel.app/assets/og-lunch.jpg',
+            imageUrl: 'https://myansweris.vercel.app/api/og?menu=' + encodeURIComponent(menu)
+              + '&flag=' + encodeURIComponent(flag) + '&code=' + encodeURIComponent(code),
             imageWidth: 800,
             imageHeight: 800,
             link: { mobileWebUrl: url, webUrl: url }
