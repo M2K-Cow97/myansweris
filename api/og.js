@@ -36,6 +36,19 @@ export default async function handler(req) {
     return Response.redirect('https://myansweris.vercel.app/assets/og-lunch.jpg', 302);
   }
 
+  // 로고는 실패해도 그냥 생략한다 (카드 자체는 나와야 하므로)
+  let logo = null;
+  try {
+    const r = await fetch('https://myansweris.vercel.app/assets/logo-cut.png');
+    if (r.ok) {
+      const b = await r.arrayBuffer();
+      let bin = '';
+      const bytes = new Uint8Array(b);
+      for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+      logo = 'data:image/png;base64,' + btoa(bin);
+    }
+  } catch (e) {}
+
   const stripes = [[4, 15], [22, 8], [42, 3], [62, -3], [82, -8], [95, -15]];
 
   return new ImageResponse(
@@ -59,6 +72,10 @@ export default async function handler(req) {
               },
             },
           })),
+          logo ? {
+            type: 'img',
+            props: { src: logo, width: 270, style: { marginBottom: '34px' } },
+          } : null,
           {
             type: 'div',
             props: {
@@ -74,6 +91,10 @@ export default async function handler(req) {
             },
           },
           {
+            type: 'div',
+            props: {
+              style: { position: 'relative', display: 'flex' },
+              children: [{
             type: 'div',
             props: {
               style: {
@@ -119,6 +140,25 @@ export default async function handler(req) {
             type: 'div',
             props: {
               style: {
+                position: 'absolute', right: '-62px', bottom: '-46px',
+                width: '162px', height: '162px', display: 'flex',
+                flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                border: '7px solid #c0392b', borderRadius: '81px',
+                transform: 'rotate(-16deg)', opacity: 0.92,
+              },
+              children: [
+                { type: 'div', props: { style: { color: '#c0392b', fontSize: '42px', letterSpacing: '2px' }, children: '확정' } },
+                { type: 'div', props: { style: { color: '#c0392b', fontSize: '15px', letterSpacing: '3px', marginTop: '6px' }, children: '번복불가' } },
+              ],
+            },
+          },
+              ],
+            },
+          },
+          {
+            type: 'div',
+            props: {
+              style: {
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
                 marginTop: '52px', color: 'rgba(255,255,255,.72)', fontSize: '21px', textAlign: 'center',
               },
@@ -128,7 +168,7 @@ export default async function handler(req) {
               ],
             },
           },
-        ],
+        ].filter(Boolean),
       },
     },
     {
