@@ -176,7 +176,7 @@ function speak(text) {
   try {
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(say);
-    u.lang = 'ko-KR'; u.rate = 1.08; u.pitch = 1.8;   // 밝고 들뜬 톤
+    u.lang = 'ko-KR'; u.rate = 0.92; u.pitch = 0.7;
     const v = pickVoice();
     if (!v) return;      // 남성 음성이 없으면 읽지 않는다
     u.voice = v;
