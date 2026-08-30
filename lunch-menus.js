@@ -116,12 +116,12 @@ btnShare.addEventListener('click', () => {
       window.Kakao.Share.sendDefault({
         objectType: 'feed',
         content: {
-          title: text,
-          description: '점심 조추첨 — 메뉴 100개 중 하나가 뽑혔습니다',
-          imageUrl: 'https://myansweris.vercel.app/assets/og.jpg',
+          title: '점심 조추첨이 완료 되었습니다.',
+          description: text + ' · 이의 제기는 받지 않습니다',
+          imageUrl: 'https://myansweris.vercel.app/assets/og-lunch.jpg',
           link: { mobileWebUrl: url, webUrl: url }
         },
-        buttons: [{ title: '나도 뽑기', link: { mobileWebUrl: url, webUrl: url } }]
+        buttons: [{ title: '나도 뽑아보기', link: { mobileWebUrl: url, webUrl: url } }]
       });
       return;
     }
