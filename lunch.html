@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
+<script src="./lunch-stats.js"></script>
 <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" integrity="sha384-TiCUE00h649CAMonG018J2ujOgDKW/kVWlChEuu4jK2vxfAAD0eZxzCKakxg55G4" crossorigin="anonymous"></script>
 </head>
 <body>
@@ -178,6 +179,7 @@ textarea::placeholder{color:rgba(16,26,77,.3);font-family:'Noto Serif KR',serif;
           <button onClick="{{ refold }}" style="flex:1;padding:15px;border:1px solid rgba(255,255,255,.16);border-radius:999px;background:rgba(10,14,40,.5);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:15px;font-weight:500;cursor:pointer;backdrop-filter:blur(8px)" style-hover="background:rgba(255,255,255,.12)">다시 뽑기</button>
           <button onClick="{{ shareKakao }}" style="flex:1;padding:15px;border:none;border-radius:999px;background:linear-gradient(135deg,#6ea8ff,#2f6bff);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 10px 28px rgba(47,107,255,.4)" style-hover="filter:brightness(1.08)">카톡 공유</button>
         </div>
+        <p style="position:relative;z-index:1;margin:12px 0 0;font-size:11px;color:rgba(255,255,255,.45);text-align:center;min-height:16px">{{ statsLine }}</p>
       </sc-if>
     </div>
   </sc-if>
@@ -252,7 +254,7 @@ class Component extends DCLogic {
       screen: 'stage', phase: 'bowl', ballOpen: false, revealed: false, confettiOn: false,
       answer: '무조건 치킨.',
       aInput: '', link: '', copied: false,
-      muted: false, playing: false, nudge: false
+      muted: false, playing: false, nudge: false, statsLine: ''
     };
   this.MENUS = [
       ["제육볶음","🇰🇷","KOR"],["김치찌개","🇰🇷","KOR"],["된장찌개","🇰🇷","KOR"],["부대찌개","🇰🇷","KOR"],
@@ -497,6 +499,7 @@ class Component extends DCLogic {
     const confettiEnabled = this.props.confetti ?? true;
     return {
       shareKakao: this.shareKakao,
+      statsLine: s.statsLine,
       soundIcon: s.muted ? '🔇' : '🔊',
       soundLabel: s.muted ? '음악 켜기' : '음악 끄기',
       toggleMute: () => {
@@ -601,7 +604,16 @@ class Component extends DCLogic {
           this._bt = setTimeout(() => this.setState({ phase: 'paper' }), 800);
           return;
         }
-        this.setState({ revealed: true });
+        this.setState({ revealed: true, statsLine: '' });
+        // 집계 기록 후 오늘의 순위 한 줄 (실패해도 화면엔 영향 없음)
+        try {
+          const [nm, tail] = String(s.answer || '').split('\n');
+          const fl = (tail || '').split(' ')[0];
+          const cd = (tail || '').replace(/[^A-Z]/g, '');
+          recordDraw(nm, fl, cd, 'app')
+            .then(() => todayLine(nm))
+            .then((line) => { if (line) this.setState({ statsLine: line }); });
+        } catch (e) {}
         clearTimeout(this._ct);
         clearTimeout(this._st);
         this._ct = setTimeout(() => this.setState({ confettiOn: true }), dur * 1000 + 300);

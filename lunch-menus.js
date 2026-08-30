@@ -116,6 +116,10 @@ function draw() {
     patch.classList.add('on');
     slip.classList.add('on');
     fitSlip();
+    // 집계 기록 후 오늘의 순위 한 줄을 붙인다 (실패해도 화면엔 영향 없음)
+    recordDraw(name, flag, code, 'gif').then(() => todayLine(name)).then((line) => {
+      if (line) elHint.textContent = line;
+    });
     btnStart.hidden = true;
     btnStart.disabled = false;
     rowAfter.hidden = false;
