@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
+<script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" integrity="sha384-TiCUE00h649CAMonG018J2ujOgDKW/kVWlChEuu4jK2vxfAAD0eZxzCKakxg55G4" crossorigin="anonymous"></script>
 </head>
 <body>
 <x-dc>
@@ -170,12 +171,12 @@ textarea::placeholder{color:rgba(16,26,77,.3);font-family:'Noto Serif KR',serif;
 
       <sc-if value="{{ notRevealed }}" hint-placeholder-val="{{ true }}">
         <button onClick="{{ ctaAction }}" style="position:relative;z-index:1;width:100%;max-width:320px;padding:17px;border:none;border-radius:999px;background:linear-gradient(135deg,#6ea8ff,#2f6bff);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 10px 28px rgba(47,107,255,.45)" style-hover="filter:brightness(1.08)" style-active="transform:scale(.98)">{{ ctaLabel }}</button>
-        <p style="position:relative;z-index:1;margin:12px 0 0;font-size:11px;color:rgba(255,255,255,.45);text-align:center">누구나 링크 하나로 자신만의 답변을 만들 수 있어요</p>
+        <p style="position:relative;z-index:1;margin:12px 0 0;font-size:11px;color:rgba(255,255,255,.45);text-align:center">메뉴 100개 중에 하나, 오늘은 이걸로 정해졌습니다</p>
       </sc-if>
       <sc-if value="{{ revealed }}" hint-placeholder-val="{{ false }}">
         <div style="position:relative;z-index:1;display:flex;gap:12px;width:100%;max-width:320px">
-          <button onClick="{{ refold }}" style="flex:1;padding:15px;border:1px solid rgba(255,255,255,.16);border-radius:999px;background:rgba(10,14,40,.5);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:15px;font-weight:500;cursor:pointer;backdrop-filter:blur(8px)" style-hover="background:rgba(255,255,255,.12)">다시 접기</button>
-          <button onClick="{{ goCompose }}" style="flex:1;padding:15px;border:none;border-radius:999px;background:linear-gradient(135deg,#6ea8ff,#2f6bff);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 10px 28px rgba(47,107,255,.4)" style-hover="filter:brightness(1.08)">나도 만들기</button>
+          <button onClick="{{ refold }}" style="flex:1;padding:15px;border:1px solid rgba(255,255,255,.16);border-radius:999px;background:rgba(10,14,40,.5);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:15px;font-weight:500;cursor:pointer;backdrop-filter:blur(8px)" style-hover="background:rgba(255,255,255,.12)">다시 뽑기</button>
+          <button onClick="{{ shareKakao }}" style="flex:1;padding:15px;border:none;border-radius:999px;background:linear-gradient(135deg,#6ea8ff,#2f6bff);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 10px 28px rgba(47,107,255,.4)" style-hover="filter:brightness(1.08)">카톡 공유</button>
         </div>
       </sc-if>
     </div>
@@ -239,7 +240,6 @@ textarea::placeholder{color:rgba(16,26,77,.3);font-family:'Noto Serif KR',serif;
       <button onClick="{{ makeLink }}" style="margin-top:2px;padding:17px;border:none;border-radius:999px;background:linear-gradient(135deg,#6ea8ff,#2f6bff);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:16px;font-weight:700;cursor:{{ submitCursor }};opacity:{{ submitOpacity }};transition:opacity .25s ease;box-shadow:0 10px 28px rgba(47,107,255,.45)" style-hover="filter:brightness(1.08)" style-active="transform:scale(.98)">링크 만들기</button>
       <p style="margin:-8px 0 0;font-size:10.5px;line-height:1.5;color:rgba(255,255,255,.4);text-align:center">링크를 받은 친구가 종이를 펼치면 답변이 공개됩니다</p>
       <div style="flex:1"></div>
-      <a href="/lunch" style="align-self:center;padding:8px 14px;color:rgba(255,255,255,.5);font-family:'Noto Sans KR',sans-serif;font-size:13px;text-decoration:none">점심 뭐 먹지? →</a>
     </div>
   </sc-if>
 </div>
@@ -249,11 +249,38 @@ class Component extends DCLogic {
   constructor(props) {
     super(props);
     this.state = {
-      screen: 'compose', phase: 'bowl', ballOpen: false, revealed: false, confettiOn: false,
+      screen: 'stage', phase: 'bowl', ballOpen: false, revealed: false, confettiOn: false,
       answer: '무조건 치킨.',
       aInput: '', link: '', copied: false,
       muted: false, playing: false, nudge: false
     };
+  this.MENUS = [
+      ["제육볶음","🇰🇷"],["김치찌개","🇰🇷"],["된장찌개","🇰🇷"],["부대찌개","🇰🇷"],["순두부찌개","🇰🇷"],
+      ["국밥","🇰🇷"],["돼지국밥","🇰🇷"],["순대국","🇰🇷"],["설렁탕","🇰🇷"],["갈비탕","🇰🇷"],
+      ["삼계탕","🇰🇷"],["감자탕","🇰🇷"],["뼈해장국","🇰🇷"],["육개장","🇰🇷"],["비빔밥","🇰🇷"],
+      ["돌솥비빔밥","🇰🇷"],["불고기","🇰🇷"],["쭈꾸미볶음","🇰🇷"],["오징어볶음","🇰🇷"],["닭갈비","🇰🇷"],
+      ["보쌈","🇰🇷"],["족발","🇰🇷"],["냉면","🇰🇷"],["콩국수","🇰🇷"],["칼국수","🇰🇷"],
+      ["수제비","🇰🇷"],["김밥","🇰🇷"],["떡볶이","🇰🇷"],["라면","🇰🇷"],["백반","🇰🇷"],
+      ["짜장면","🇨🇳"],["짬뽕","🇨🇳"],["탕수육","🇨🇳"],["마라탕","🇨🇳"],["마라샹궈","🇨🇳"],
+      ["양꼬치","🇨🇳"],["볶음밥","🇨🇳"],["마파두부","🇨🇳"],["깐풍기","🇨🇳"],["울면","🇨🇳"],
+      ["군만두","🇨🇳"],["훠궈","🇨🇳"],
+      ["초밥","🇯🇵"],["돈까스","🇯🇵"],["카레","🇯🇵"],["라멘","🇯🇵"],["우동","🇯🇵"],
+      ["소바","🇯🇵"],["규동","🇯🇵"],["가츠동","🇯🇵"],["오야코동","🇯🇵"],["텐동","🇯🇵"],
+      ["사케동","🇯🇵"],["오므라이스","🇯🇵"],["타코야키","🇯🇵"],["나베","🇯🇵"],["야키소바","🇯🇵"],
+      ["파스타","🇮🇹"],["크림파스타","🇮🇹"],["알리오올리오","🇮🇹"],["라자냐","🇮🇹"],
+      ["피자","🇮🇹"],["마르게리타피자","🇮🇹"],["리조또","🇮🇹"],["뇨끼","🇮🇹"],
+      ["햄버거","🇺🇸"],["치즈버거","🇺🇸"],["스테이크","🇺🇸"],["BBQ립","🇺🇸"],
+      ["핫도그","🇺🇸"],["샌드위치","🇺🇸"],["콥샐러드","🇺🇸"],["치킨텐더","🇺🇸"],
+      ["팟타이","🇹🇭"],["똠얌꿍","🇹🇭"],["그린커리","🇹🇭"],["카오팟","🇹🇭"],["뿌팟퐁커리","🇹🇭"],
+      ["쌀국수","🇻🇳"],["분짜","🇻🇳"],["반미","🇻🇳"],["월남쌈","🇻🇳"],
+      ["타코","🇲🇽"],["부리토","🇲🇽"],["퀘사디아","🇲🇽"],["나초","🇲🇽"],
+      ["버터치킨커리","🇮🇳"],["탄두리치킨","🇮🇳"],["난&커리","🇮🇳"],["비리야니","🇮🇳"],
+      ["빠에야","🇪🇸"],["감바스","🇪🇸"],["타파스","🇪🇸"],
+      ["크로크무슈","🇫🇷"],["키슈","🇫🇷"],["라따뚜이","🇫🇷"],
+      ["케밥","🇹🇷"],["피데","🇹🇷"],
+      ["딤섬","🇭🇰"],["슈니첼","🇩🇪"],
+    ];
+    this._lastMenu = -1;
     const colors = ['#e8c877', '#f5dfa3', '#ffffff', '#7ea0ff'];
     this.confettiPieces = Array.from({length: 22}, (_, i) => ({
       left: Math.round(Math.random() * 96),
@@ -333,6 +360,36 @@ class Component extends DCLogic {
     } catch (e) {}
     if (this._audio && !this.state.muted) this._audio.volume = 0.6;
   };
+  pickMenu() {
+    let i;
+    do { i = Math.floor(Math.random() * this.MENUS.length); } while (i === this._lastMenu && this.MENUS.length > 1);
+    this._lastMenu = i;
+    const [name, flag] = this.MENUS[i];
+    return name + ' ' + flag;
+  }
+  shareKakao = () => {
+    const text = '오늘 점심은 ' + this.state.answer;
+    const url = location.href.split('#')[0];
+    try {
+      if (window.Kakao) {
+        if (!window.Kakao.isInitialized()) window.Kakao.init('0a6d4475254b25344a9e9f7777580b92');
+        window.Kakao.Share.sendDefault({
+          objectType: 'feed',
+          content: {
+            title: text,
+            description: '점심 조추첨 — 메뉴 100개 중 하나가 뽑혔습니다',
+            imageUrl: 'https://myansweris.vercel.app/assets/og.jpg',
+            link: { mobileWebUrl: url, webUrl: url }
+          },
+          buttons: [{ title: '나도 뽑기', link: { mobileWebUrl: url, webUrl: url } }]
+        });
+        return;
+      }
+    } catch (e) {}
+    if (navigator.share) { navigator.share({ text: text, url: url }).catch(() => {}); return; }
+    navigator.clipboard && navigator.clipboard.writeText(text + ' ' + url);
+    this.setState({ copied: true });
+  };
   startBgm = () => {
     const a = this._audio;
     if (!a || this.state.muted) return;
@@ -352,16 +409,7 @@ class Component extends DCLogic {
       window.addEventListener(ev, this._unlock, { passive: true })
     );
 
-    const h = location.hash.slice(1);
-    if (h) {
-      const legacy = h.match(/^d=(.+)$/);
-      try {
-        const answer = legacy
-          ? (JSON.parse(this.b64decode(legacy[1])).a || '')
-          : this.b64decode(h);
-        if (answer) this.setState({ screen: 'stage', answer: answer });
-      } catch (e) {}
-    }
+    this.setState({ answer: this.pickMenu() });
   }
   componentWillUnmount() {
     ['pointerdown', 'touchstart', 'keydown'].forEach((ev) =>
@@ -385,6 +433,7 @@ class Component extends DCLogic {
     const dur = this.props.unfoldSeconds ?? 1.1;
     const confettiEnabled = this.props.confetti ?? true;
     return {
+      shareKakao: this.shareKakao,
       soundIcon: s.muted ? '🔇' : '🔊',
       soundLabel: s.muted ? '음악 켜기' : '음악 끄기',
       toggleMute: () => {
@@ -418,9 +467,9 @@ class Component extends DCLogic {
       isBowl: s.phase === 'bowl',
       isBall: s.phase === 'ball',
       isPaper: s.phase === 'paper',
-      stageTitle: s.phase === 'bowl' ? '공 하나를,' : s.phase === 'ball' ? '공 안에,' : '답변은,',
-      stageTitleAccent: s.phase === 'bowl' ? '뽑아주세요.' : s.phase === 'ball' ? '종이가 있어요.' : '종이 안에.',
-      stageSub: s.phase === 'bowl' ? '공을 위로 드래그해서 뽑아보세요' : s.phase === 'ball' ? '공을 열어서 확인해보세요' : '버튼을 누르면 운명의 답변이 공개됩니다',
+      stageTitle: s.phase === 'bowl' ? '공 하나를,' : s.phase === 'ball' ? '공 안에,' : '오늘 점심은,',
+      stageTitleAccent: s.phase === 'bowl' ? '뽑아주세요.' : s.phase === 'ball' ? '종이가 있어요.' : '이걸로.',
+      stageSub: s.phase === 'bowl' ? '공을 위로 드래그해서 뽑아보세요' : s.phase === 'ball' ? '공을 열어서 확인해보세요' : '버튼을 누르면 오늘의 메뉴가 공개됩니다',
       dragging: !!s.drag,
       dragLeft: s.drag ? s.drag.x + 'px' : '0px',
       dragTop: s.drag ? s.drag.y + 'px' : '0px',
@@ -495,7 +544,10 @@ class Component extends DCLogic {
         this._ct = setTimeout(() => this.setState({ confettiOn: true }), dur * 1000 + 300);
         this._st = setTimeout(() => this.speakAnswer(s.answer), dur * 1000 + 200);
       },
-      refold: () => { clearTimeout(this._ct); clearTimeout(this._st); this.stopSpeak(); this.setState({ revealed: false, confettiOn: false }); },
+      refold: () => {
+        clearTimeout(this._ct); clearTimeout(this._st); this.stopSpeak();
+        this.setState({ revealed: false, confettiOn: false, phase: 'bowl', ballOpen: false, ballEntered: false, ballFrom: null, answer: this.pickMenu() });
+      },
       goCompose: () => this.setState({ screen: 'compose' }),
       goStage: () => this.setState({ screen: 'stage', phase: 'bowl', ballOpen: false, revealed: false, confettiOn: false, answer: '무조건 치킨.' }),
       makeLink: () => {
