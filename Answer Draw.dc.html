@@ -298,19 +298,19 @@ class Component extends DCLogic {
     const b = str.replace(/-/g, '+').replace(/_/g, '/');
     return decodeURIComponent(escape(atob(b + '==='.slice((b.length + 3) % 4))));
   }
-  // Prefer a Korean male voice; voice lists load async on some browsers.
-  // 남성 음성만 쓰되 밝은 쪽을 먼저 고른다.
-  // Rocko(밝은 캐릭터) > Reed(내레이션) > Eddy(중저음) > Grandpa(노년) 순.
+  // 남성 음성을 우선하되, 없으면 아무 한국어 음성으로라도 읽는다.
+  // (모바일은 남성 보이스가 없는 기기가 많아 여기서 막으면 그냥 무음이 된다)
   pickVoice() {
-    const ko = window.speechSynthesis.getVoices().filter((v) => /^ko/i.test(v.lang));
+    const all = window.speechSynthesis.getVoices();
+    const ko = all.filter((v) => /^ko/i.test(v.lang));
     if (!ko.length) return null;
-    const ORDER = [/rocko/i, /reed/i, /\bko-kr-x-kod\b/i, /injoon|minsu|jinho/i, /eddy/i, /grandpa/i, /male|남성|남자/i];
+    const ORDER = [/rocko/i, /reed/i, /\bko-kr-x-ko[db]\b/i, /injoon|minsu|jinho/i, /eddy/i, /grandpa/i, /male|남성|남자/i];
     for (const re of ORDER) {
       const hit = ko.find((v) => re.test(v.name));
       if (hit) return hit;
     }
     const FEMALE = /\b(yuna|sora|heami|nari|sunhi|jiwon|flo|sandy|shelley|grandma|female|여성|여자|ko-kr-x-ko[ac])\b/i;
-    return ko.find((v) => !FEMALE.test(v.name)) || null;
+    return ko.find((v) => !FEMALE.test(v.name)) || ko[0];
   }
   // 화면에는 국기를 두되, 읽을 때는 뺀다 ("치킨 🇰🇷" 이 "치킨 대한민국 국기" 가 되지 않도록)
   speechText(text) {
@@ -321,27 +321,47 @@ class Component extends DCLogic {
       .replace(/\s+/g, ' ')
       .trim();
   }
+  // iOS는 사용자 제스처 안에서 speak() 를 한 번 거쳐야 이후 재생을 허용한다.
+  primeSpeech = () => {
+    if (this._speechPrimed || !window.speechSynthesis) return;
+    this._speechPrimed = true;
+    try {
+      const u = new SpeechSynthesisUtterance(' ');
+      u.volume = 0; u.lang = 'ko-KR';
+      window.speechSynthesis.speak(u);
+    } catch (e) {}
+  };
   speakAnswer = (text) => {
     const synth = window.speechSynthesis;
     const say = this.speechText(text);
     if (!synth || !say) return;
-    try {
-      synth.cancel();
-      const u = new SpeechSynthesisUtterance(say);
-      u.lang = 'ko-KR';
-      u.rate = 0.9;
-      u.pitch = 1.4;
-      const v = this.pickVoice();
-      if (!v) return;      // 남성 음성이 없으면 읽지 않는다
-      u.voice = v;
-      const a = this._audio;
-      const restore = () => { if (a && !this.state.muted) a.volume = 0.6; };
-      if (a && !this.state.muted) a.volume = 0.15;
-      u.onend = restore;
-      u.onerror = restore;
-      this._utter = u;
-      synth.speak(u);
-    } catch (e) {}
+    const go = () => {
+      try {
+        synth.cancel();
+        const u = new SpeechSynthesisUtterance(say);
+        u.lang = 'ko-KR';
+        u.rate = 0.9;
+        u.pitch = 1.4;
+        const v = this.pickVoice();
+        if (v) u.voice = v;          // 못 찾아도 기본 음성으로 읽는다
+        const a = this._audio;
+        const restore = () => { if (a && !this.state.muted) a.volume = 0.6; };
+        if (a && !this.state.muted) a.volume = 0.15;
+        u.onend = restore;
+        u.onerror = restore;
+        this._utter = u;
+        synth.speak(u);
+      } catch (e) {}
+    };
+    // 음성 목록이 아직 안 왔으면 voiceschanged 를 한 번 기다린다 (모바일에서 흔함)
+    if (!synth.getVoices().length) {
+      let done = false;
+      const once = () => { if (done) return; done = true; go(); };
+      try { synth.addEventListener('voiceschanged', once, { once: true }); } catch (e) {}
+      setTimeout(once, 700);
+      return;
+    }
+    go();
   };
   stopSpeak = () => {
     try {
@@ -363,7 +383,7 @@ class Component extends DCLogic {
     a.preload = 'auto';
     this._audio = a;
     this.startBgm();
-    this._unlock = () => this.startBgm();
+    this._unlock = () => { this.startBgm(); this.primeSpeech(); };
     ['pointerdown', 'touchstart', 'keydown'].forEach((ev) =>
       window.addEventListener(ev, this._unlock, { passive: true })
     );

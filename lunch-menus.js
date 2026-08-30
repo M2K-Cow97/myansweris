@@ -169,7 +169,7 @@ audio.loop = true; audio.volume = 0.6; audio.preload = 'auto';
 let muted = false;
 const startBgm = () => { if (!muted) audio.play().catch(() => {}); };
 startBgm();
-const unlock = () => startBgm();
+const unlock = () => { startBgm(); primeSpeech(); };
 ['pointerdown', 'touchstart', 'keydown'].forEach((e) =>
   window.addEventListener(e, unlock, { passive: true }));
 
@@ -185,14 +185,25 @@ btnSound.addEventListener('click', () => {
 function pickVoice() {
   const ko = speechSynthesis.getVoices().filter((v) => /^ko/i.test(v.lang));
   if (!ko.length) return null;
-  const ORDER = [/rocko/i, /reed/i, /\bko-kr-x-kod\b/i, /injoon|minsu|jinho/i, /eddy/i, /grandpa/i, /male|남성|남자/i];
+  const ORDER = [/rocko/i, /reed/i, /\bko-kr-x-ko[db]\b/i, /injoon|minsu|jinho/i, /eddy/i, /grandpa/i, /male|남성|남자/i];
   for (const re of ORDER) { const hit = ko.find((v) => re.test(v.name)); if (hit) return hit; }
   const FEMALE = /\b(yuna|sora|heami|nari|sunhi|jiwon|flo|sandy|shelley|grandma|female|여성|여자|ko-kr-x-ko[ac])\b/i;
-  return ko.find((v) => !FEMALE.test(v.name)) || null;
+  return ko.find((v) => !FEMALE.test(v.name)) || ko[0];
 }
 function stopSpeak() {
   try { speechSynthesis.cancel(); } catch (e) {}
   if (!muted) audio.volume = 0.6;
+}
+// iOS는 사용자 제스처 안에서 speak() 를 한 번 거쳐야 이후 재생을 허용한다.
+let speechPrimed = false;
+function primeSpeech() {
+  if (speechPrimed || !window.speechSynthesis) return;
+  speechPrimed = true;
+  try {
+    const u = new SpeechSynthesisUtterance(' ');
+    u.volume = 0; u.lang = 'ko-KR';
+    speechSynthesis.speak(u);
+  } catch (e) {}
 }
 // 화면에는 국기를 두되, 읽을 때는 뺀다
 function speechText(text) {
@@ -204,16 +215,25 @@ function speechText(text) {
 function speak(text) {
   const say = speechText(text);
   if (!window.speechSynthesis || muted || !say) return;
-  try {
-    speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(say);
-    u.lang = 'ko-KR'; u.rate = 0.9; u.pitch = 1.4;
-    const v = pickVoice();
-    if (!v) return;      // 남성 음성이 없으면 읽지 않는다
-    u.voice = v;
-    const restore = () => { if (!muted) audio.volume = 0.6; };
-    audio.volume = 0.15;
-    u.onend = restore; u.onerror = restore;
-    speechSynthesis.speak(u);
-  } catch (e) {}
+  const go = () => {
+    try {
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(say);
+      u.lang = 'ko-KR'; u.rate = 0.9; u.pitch = 1.4;
+      const v = pickVoice();
+      if (v) u.voice = v;           // 못 찾아도 기본 음성으로 읽는다
+      const restore = () => { if (!muted) audio.volume = 0.6; };
+      audio.volume = 0.15;
+      u.onend = restore; u.onerror = restore;
+      speechSynthesis.speak(u);
+    } catch (e) {}
+  };
+  if (!speechSynthesis.getVoices().length) {   // 모바일은 목록이 늦게 온다
+    let done = false;
+    const once = () => { if (done) return; done = true; go(); };
+    try { speechSynthesis.addEventListener('voiceschanged', once, { once: true }); } catch (e) {}
+    setTimeout(once, 700);
+    return;
+  }
+  go();
 }
