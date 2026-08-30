@@ -299,25 +299,41 @@ class Component extends DCLogic {
     return decodeURIComponent(escape(atob(b + '==='.slice((b.length + 3) % 4))));
   }
   // Prefer a Korean male voice; voice lists load async on some browsers.
+  // 남성 음성만 쓰되 밝은 쪽을 먼저 고른다.
+  // Rocko(밝은 캐릭터) > Reed(내레이션) > Eddy(중저음) > Grandpa(노년) 순.
   pickVoice() {
-    const all = window.speechSynthesis.getVoices().filter((v) => /^ko/i.test(v.lang));
-    if (!all.length) return null;
-    const male = all.find((v) => /male|남|minsu|injoon|yuna_male/i.test(v.name) && !/female|여/i.test(v.name));
-    return male
-      || all.find((v) => !/female|여|yuna|sora|heami|nari/i.test(v.name))
-      || all[0];
+    const ko = window.speechSynthesis.getVoices().filter((v) => /^ko/i.test(v.lang));
+    if (!ko.length) return null;
+    const ORDER = [/rocko/i, /reed/i, /\bko-kr-x-kod\b/i, /injoon|minsu|jinho/i, /eddy/i, /grandpa/i, /male|남성|남자/i];
+    for (const re of ORDER) {
+      const hit = ko.find((v) => re.test(v.name));
+      if (hit) return hit;
+    }
+    const FEMALE = /\b(yuna|sora|heami|nari|sunhi|jiwon|flo|sandy|shelley|grandma|female|여성|여자|ko-kr-x-ko[ac])\b/i;
+    return ko.find((v) => !FEMALE.test(v.name)) || null;
+  }
+  // 화면에는 국기를 두되, 읽을 때는 뺀다 ("치킨 🇰🇷" 이 "치킨 대한민국 국기" 가 되지 않도록)
+  speechText(text) {
+    return String(text || '')
+      .split('\n')[0]                                             // 국가코드 줄은 읽지 않는다
+      .replace(/[\u{1F1E6}-\u{1F1FF}]{2}/gu, ' ')                 // 국기 (regional indicator 쌍)
+      .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu, ' ')  // 그 외 이모지·기호
+      .replace(/\s+/g, ' ')
+      .trim();
   }
   speakAnswer = (text) => {
     const synth = window.speechSynthesis;
-    if (!synth || !text) return;
+    const say = this.speechText(text);
+    if (!synth || !say) return;
     try {
       synth.cancel();
-      const u = new SpeechSynthesisUtterance(text);
+      const u = new SpeechSynthesisUtterance(say);
       u.lang = 'ko-KR';
-      u.rate = 0.92;
-      u.pitch = 0.7;
+      u.rate = 1.0;
+      u.pitch = 1.1;
       const v = this.pickVoice();
-      if (v) u.voice = v;
+      if (!v) return;      // 남성 음성이 없으면 읽지 않는다
+      u.voice = v;
       const a = this._audio;
       const restore = () => { if (a && !this.state.muted) a.volume = 0.6; };
       if (a && !this.state.muted) a.volume = 0.15;

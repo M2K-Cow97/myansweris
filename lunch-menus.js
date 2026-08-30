@@ -32,6 +32,7 @@ const MENUS = [
 
 const CEREMONY_MS = 4200;
 const GIF = 'assets/lunch-draw.gif';
+const STILL = 'assets/lunch-still.png';   // 추첨이 끝나면 마지막 프레임에서 멈춘다
 const KAKAO_KEY = '0a6d4475254b25344a9e9f7777580b92';
 
 const $ = (id) => document.getElementById(id);
@@ -84,6 +85,7 @@ function draw() {
     elName.style.animation = 'none'; elCountry.style.animation = 'none';
     void elName.offsetWidth;
     elName.style.animation = ''; elCountry.style.animation = '';
+    scene.src = STILL;          // GIF 반복을 끊고 정지 프레임으로 교체
     patch.classList.add('on');
     slip.classList.add('on');
     fitSlip();
@@ -92,7 +94,6 @@ function draw() {
     rowAfter.hidden = false;
     elTitle.innerHTML = '오늘 점심은, <span>이걸로.</span>';
     elSub.textContent = '번복은 불가능합니다';
-    elHint.textContent = '다시 뽑아도 운명은 바뀌지 않습니다 (사실 바뀝니다)';
     speak(name);
   }, CEREMONY_MS);
 }
@@ -151,23 +152,34 @@ btnSound.addEventListener('click', () => {
 
 /* ---- TTS: 남성 저음, 읽는 동안 음악 더킹 ---- */
 function pickVoice() {
-  const all = speechSynthesis.getVoices().filter((v) => /^ko/i.test(v.lang));
-  if (!all.length) return null;
-  return all.find((v) => /male|남/i.test(v.name) && !/female|여/i.test(v.name))
-      || all.find((v) => !/female|여|yuna|sora|heami|nari/i.test(v.name))
-      || all[0];
+  const ko = speechSynthesis.getVoices().filter((v) => /^ko/i.test(v.lang));
+  if (!ko.length) return null;
+  const ORDER = [/rocko/i, /reed/i, /\bko-kr-x-kod\b/i, /injoon|minsu|jinho/i, /eddy/i, /grandpa/i, /male|남성|남자/i];
+  for (const re of ORDER) { const hit = ko.find((v) => re.test(v.name)); if (hit) return hit; }
+  const FEMALE = /\b(yuna|sora|heami|nari|sunhi|jiwon|flo|sandy|shelley|grandma|female|여성|여자|ko-kr-x-ko[ac])\b/i;
+  return ko.find((v) => !FEMALE.test(v.name)) || null;
 }
 function stopSpeak() {
   try { speechSynthesis.cancel(); } catch (e) {}
   if (!muted) audio.volume = 0.6;
 }
+// 화면에는 국기를 두되, 읽을 때는 뺀다
+function speechText(text) {
+  return String(text || '')
+    .replace(/[\u{1F1E6}-\u{1F1FF}]{2}/gu, ' ')
+    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu, ' ')
+    .replace(/\s+/g, ' ').trim();
+}
 function speak(text) {
-  if (!window.speechSynthesis || muted) return;
+  const say = speechText(text);
+  if (!window.speechSynthesis || muted || !say) return;
   try {
     speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'ko-KR'; u.rate = 0.92; u.pitch = 0.7;
-    const v = pickVoice(); if (v) u.voice = v;
+    const u = new SpeechSynthesisUtterance(say);
+    u.lang = 'ko-KR'; u.rate = 1.0; u.pitch = 1.1;
+    const v = pickVoice();
+    if (!v) return;      // 남성 음성이 없으면 읽지 않는다
+    u.voice = v;
     const restore = () => { if (!muted) audio.volume = 0.6; };
     audio.volume = 0.15;
     u.onend = restore; u.onerror = restore;

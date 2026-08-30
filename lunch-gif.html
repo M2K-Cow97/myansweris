@@ -38,15 +38,19 @@ h1 span{color:#8db6ff}
 /* 종이 안쪽 — GIF 원본 좌표에 맞춤 (x 76-232 / y 66-125 of 400x224) */
 /* 원본 카드에 박힌 "Manchester United FC (ENG)" 를 덮는 패치.
    종이 결을 살리려고 살짝 기울이고 옅은 그라데이션을 준다. */
-.patch{position:absolute;left:18.5%;top:28%;width:40.5%;height:29.5%;
-  background:linear-gradient(178deg,#f4f4f2 0%,#ececea 55%,#e4e4e2 100%);
-  transform:rotate(-1.1deg);opacity:0;transition:opacity .18s;
+/* 정지 프레임에서 실측한 종이 흰 영역: x 80-223 / y 62-101 (400x224).
+   원본 카드에 박힌 "Manchester United FC (ENG)" 를 덮고 그 안에 메뉴를 앉힌다. */
+/* 정지 프레임에서 격자로 실측한 종이: x 79-222 / y 60-124 (400x224).
+   원본에 박힌 "Manchester United FC (ENG)" 3줄을 전부 덮는다. */
+.patch{position:absolute;left:19.5%;top:26.3%;width:36.3%;height:29.5%;
+  background:linear-gradient(177deg,#f7f7f5 0%,#f0f0ee 52%,#e7e7e5 100%);
+  transform:rotate(-0.9deg);opacity:0;transition:opacity .18s;
   box-shadow:inset 0 1px 2px rgba(0,0,0,.05)}
 .patch.on{opacity:1}
-.slip{position:absolute;left:19%;top:29.5%;width:39%;height:26.5%;
+.slip{position:absolute;left:19.8%;top:26.8%;width:35.8%;height:28.6%;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  text-align:center;color:#20242c;transform:rotate(-1.1deg);opacity:0;
-  font-family:'Noto Sans KR',sans-serif;z-index:1}
+  text-align:center;color:#20242c;transform:rotate(-0.9deg);opacity:0;
+  font-family:'Noto Sans KR',sans-serif;z-index:1;padding:0 3%}
 .slip.on{opacity:1}
 .slip .name{font-weight:700;line-height:1.12;letter-spacing:-.02em;
   animation:stamp .42s cubic-bezier(.25,1.4,.4,1) both}
@@ -60,23 +64,25 @@ h1 span{color:#8db6ff}
 .cover .star{font-size:30px}
 .cover .t{font-size:clamp(16px,4.5cqw,22px);font-weight:700;letter-spacing:.02em}
 .cover .s{font-size:clamp(11px,2.6cqw,13px);opacity:.72}
-.btn{width:100%;max-width:320px;margin:0 auto;padding:16px;border:none;border-radius:999px;
-  background:linear-gradient(135deg,#6ea8ff,#2f6bff);color:#fff;font-family:inherit;
-  font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 10px 28px rgba(47,107,255,.45)}
+.btn{display:block;width:100%;max-width:320px;margin:0 auto;height:54px;padding:0 18px;
+  border:none;border-radius:999px;background:linear-gradient(135deg,#6ea8ff,#2f6bff);
+  color:#fff;font-family:inherit;font-size:16px;font-weight:700;line-height:1;
+  cursor:pointer;box-shadow:0 10px 28px rgba(47,107,255,.45)}
 .btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.55;cursor:default;transform:none}
+/* 두 버튼은 같은 높이·같은 폭으로 나눠 갖는다 */
 .row{display:flex;gap:10px;width:100%;max-width:320px;margin:0 auto}
-.row .btn{margin:0}
-.ghost{flex:1;padding:15px;border:1px solid rgba(255,255,255,.16);border-radius:999px;
-  background:rgba(10,14,40,.5);color:#fff;font-family:inherit;font-size:15px;font-weight:500;
-  cursor:pointer;backdrop-filter:blur(8px)}
+.row>*{flex:1 1 0;min-width:0;height:54px;margin:0;padding:0 12px;border-radius:999px;
+  box-sizing:border-box;border:1px solid transparent;
+  font-family:inherit;font-size:15px;line-height:1;cursor:pointer}
+.ghost{border:1px solid rgba(255,255,255,.16);background:rgba(10,14,40,.5);color:#fff;
+  font-weight:500;backdrop-filter:blur(8px)}
+.ghost:active{transform:scale(.98)}
 .hint{margin:11px 0 0;font-size:11px;color:rgba(255,255,255,.45);text-align:center}
 .sound{position:absolute;top:14px;right:14px;z-index:20;width:38px;height:38px;padding:0;
   display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.18);
   border-radius:50%;background:rgba(8,12,36,.45);backdrop-filter:blur(8px);color:#fff;
   font-size:15px;line-height:1;cursor:pointer}
-.foot{margin:14px 0 0;text-align:center}
-.foot a{color:rgba(255,255,255,.5);font-size:13px;text-decoration:none}
-.foot a:hover{color:#fff}
 [hidden]{display:none!important}
 @media (prefers-reduced-motion:reduce){.slip .name,.slip .country{animation:none}}
 </style>
@@ -110,7 +116,6 @@ h1 span{color:#8db6ff}
     <button class="btn" id="share">카톡 공유</button>
   </div>
   <p class="hint" id="hint">메뉴 100개 중에 하나, 오늘은 이걸로 정해졌습니다</p>
-  <div class="foot"><a href="/">나만의 답변 만들기 →</a></div>
 </div>
 <script src="lunch-menus.js"></script>
 </body>
