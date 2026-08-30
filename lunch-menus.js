@@ -115,7 +115,7 @@ function land(skipCeremony) {
   recordDraw(name, flag, code, 'gif').then(() => todayLine(name)).then((line) => {
     if (line) elHint.textContent = line;
   });
-  if (!skipCeremony) speak(name);
+  speak(name);   // 공유로 들어와도 결과는 읽어준다
 }
 
 function draw() {
@@ -150,6 +150,14 @@ btnStart.addEventListener('click', () => {
   cover.classList.add('hide');
   scene.src = STILL;
   land(true);
+  // 첫 조작 전에는 iOS 가 발화를 막는다 — 터치가 오면 한 번 더 읽는다.
+  const retry = () => {
+    window.removeEventListener('pointerdown', retry);
+    window.removeEventListener('touchstart', retry);
+    setTimeout(() => speak(seed[0]), 120);
+  };
+  window.addEventListener('pointerdown', retry, { once: true, passive: true });
+  window.addEventListener('touchstart', retry, { once: true, passive: true });
 })();
 btnRedraw.addEventListener('click', () => {
   if (location.hash) history.replaceState(null, '', location.pathname);

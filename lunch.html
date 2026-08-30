@@ -482,6 +482,18 @@ class Component extends DCLogic {
         answer: seeded, phase: 'paper', ballOpen: true,
         revealed: true, confettiOn: true, skipCeremony: true,
       });
+      // 연출은 건너뛰어도 결과는 읽어준다. 첫 조작 전이면 iOS 가 막으므로
+      // primeSpeech 가 풀린 뒤에 한 번 더 시도한다.
+      const say = () => this.speakAnswer(seeded);
+      clearTimeout(this._st);
+      this._st = setTimeout(say, 700);
+      const once = () => {
+        window.removeEventListener('pointerdown', once);
+        window.removeEventListener('touchstart', once);
+        setTimeout(say, 120);
+      };
+      window.addEventListener('pointerdown', once, { once: true, passive: true });
+      window.addEventListener('touchstart', once, { once: true, passive: true });
     } else {
       this.setState({ answer: this.pickMenu() });
     }
