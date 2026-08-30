@@ -27,15 +27,25 @@ function rpc(name) {
   }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
 }
 
-// "오늘 47명 중 12명이 같은 운명 · 1위 김치찌개" 한 줄을 만든다.
+// 결과 아래 한 줄. 표가 몰리면 순위를, 다 갈리면 최근 뽑힌 것들을 보여준다.
 async function todayLine(menu) {
-  const [rank, total] = await Promise.all([rpc('today_ranking'), rpc('today_total')]);
-  if (!Array.isArray(rank) || !rank.length || !total) return '';
-  const top = rank[0];
-  const mine = rank.find((r) => r.menu === menu);
+  const [rank, total, recent] = await Promise.all([
+    rpc('today_ranking'), rpc('today_total'), rpc('today_recent'),
+  ]);
+  if (!total) return '';
   const parts = ['오늘 ' + total + '명이 뽑았습니다'];
+  const top = Array.isArray(rank) && rank.length ? rank[0] : null;
+  const mine = Array.isArray(rank) ? rank.find((r) => r.menu === menu) : null;
+
   if (mine && mine.cnt > 1) parts.push('그중 ' + mine.cnt + '명이 같은 운명');
-  // 표본이 적으면 1위가 곧 방금 뽑은 메뉴라 의미가 없다.
-  if (top.cnt > 1) parts.push('1위 ' + top.menu + ' ' + top.flag + ' ' + top.cnt + '표');
+
+  if (top && top.cnt > 1) {
+    // 표가 몰린 메뉴가 있을 때만 순위가 의미를 갖는다.
+    parts.push('1위 ' + top.menu + ' ' + top.flag + ' ' + top.cnt + '표');
+  } else if (Array.isArray(recent) && recent.length > 1) {
+    // 다 제각각이면 순위 대신 남들이 뭘 받았는지 보여준다.
+    const others = recent.filter((r) => r.menu !== menu).slice(0, 3);
+    if (others.length) parts.push('방금 전 ' + others.map((r) => r.menu).join(' · '));
+  }
   return parts.join(' · ');
 }
