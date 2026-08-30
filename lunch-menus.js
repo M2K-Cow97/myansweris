@@ -43,6 +43,25 @@ const elTitle = $('title'), elSub = $('sub'), elHint = $('hint'), btnSound = $('
 
 let last = -1, timer = null, current = null;
 
+// 공유 링크에 결과를 담기 위한 인코딩 (답변 앱과 같은 방식)
+function b64encode(str) {
+  return btoa(unescape(encodeURIComponent(str)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function b64decode(str) {
+  const b = str.replace(/-/g, '+').replace(/_/g, '/');
+  return decodeURIComponent(escape(atob(b + '==='.slice((b.length + 3) % 4))));
+}
+// #메뉴 로 들어오면 그 결과를 고정한다
+function seededMenu() {
+  const h = location.hash.slice(1);
+  if (!h) return null;
+  try {
+    const name = b64decode(h);
+    return MENUS.find((m) => m[0] === name) || null;
+  } catch (e) { return null; }
+}
+
 function pick() {
   let i;
   do { i = Math.floor(Math.random() * MENUS.length); } while (i === last && MENUS.length > 1);
@@ -77,7 +96,9 @@ function draw() {
   elSub.textContent = '진행자가 캡슐을 여는 중입니다';
   scene.src = '';
   scene.src = GIF;
-  current = pick();
+  const seed = seededMenu();
+  if (seed) { current = seed; last = MENUS.indexOf(seed); }
+  else current = pick();
   timer = setTimeout(() => {
     const [name, flag, code] = current;
     elName.textContent = name;
@@ -102,14 +123,19 @@ btnStart.addEventListener('click', () => {
   cover.classList.add('hide');
   draw();
 });
-btnRedraw.addEventListener('click', draw);
+btnRedraw.addEventListener('click', () => {
+  if (location.hash) history.replaceState(null, '', location.pathname);
+  draw();
+});
 window.addEventListener('resize', () => { if (slip.classList.contains('on')) fitSlip(); });
 
 btnShare.addEventListener('click', () => {
   if (!current) return;
   const [name, flag] = current;
   const text = '오늘 점심은 ' + name + ' ' + flag;
-  const url = location.href.split('#')[0];
+  const base = location.href.split('#')[0];
+  const resultUrl = base + '#' + b64encode(name);
+  const url = base;
   try {
     if (window.Kakao) {
       if (!window.Kakao.isInitialized()) window.Kakao.init(KAKAO_KEY);
@@ -123,7 +149,10 @@ btnShare.addEventListener('click', () => {
           imageHeight: 800,
           link: { mobileWebUrl: url, webUrl: url }
         },
-        buttons: [{ title: '나도 뽑아보기', link: { mobileWebUrl: url, webUrl: url } }]
+        buttons: [
+          { title: '결과 보기', link: { mobileWebUrl: resultUrl, webUrl: resultUrl } },
+          { title: '나도 뽑기', link: { mobileWebUrl: url, webUrl: url } }
+        ]
       });
       return;
     }

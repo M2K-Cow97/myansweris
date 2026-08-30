@@ -389,7 +389,9 @@ class Component extends DCLogic {
     const [menu, tail] = String(this.state.answer || '').split('\n');
     const flag = (tail || '').split(' ')[0];
     const text = '오늘 점심은 ' + menu + (flag ? ' ' + flag : '');
-    const url = location.href.split('#')[0];
+    const base = location.href.split('#')[0];
+    const resultUrl = base + '#' + this.b64encode(menu);   // 메뉴명만 담아 링크를 짧게
+    const url = base;
     try {
       if (window.Kakao) {
         if (!window.Kakao.isInitialized()) window.Kakao.init('0a6d4475254b25344a9e9f7777580b92');
@@ -403,7 +405,10 @@ class Component extends DCLogic {
             imageHeight: 800,
             link: { mobileWebUrl: url, webUrl: url }
           },
-          buttons: [{ title: '나도 뽑아보기', link: { mobileWebUrl: url, webUrl: url } }]
+          buttons: [
+            { title: '결과 보기', link: { mobileWebUrl: resultUrl, webUrl: resultUrl } },
+            { title: '나도 뽑기', link: { mobileWebUrl: url, webUrl: url } }
+          ]
         });
         return;
       }
@@ -431,7 +436,17 @@ class Component extends DCLogic {
       window.addEventListener(ev, this._unlock, { passive: true })
     );
 
-    this.setState({ answer: this.pickMenu() });
+    // 공유 링크(#메뉴)로 들어오면 그 결과를, 아니면 새로 뽑는다.
+    const h = location.hash.slice(1);
+    let seeded = '';
+    if (h) {
+      try {
+        const name = this.b64decode(h);
+        const hit = this.MENUS.find((m) => m[0] === name);
+        if (hit) seeded = hit[0] + '\n' + hit[1] + ' (' + hit[2] + ')';
+      } catch (e) {}
+    }
+    this.setState({ answer: seeded || this.pickMenu() });
   }
   componentWillUnmount() {
     ['pointerdown', 'touchstart', 'keydown'].forEach((ev) =>
@@ -568,6 +583,7 @@ class Component extends DCLogic {
       },
       refold: () => {
         clearTimeout(this._ct); clearTimeout(this._st); this.stopSpeak();
+        if (location.hash) history.replaceState(null, '', location.pathname);
         this.setState({ revealed: false, confettiOn: false, phase: 'bowl', ballOpen: false, ballEntered: false, ballFrom: null, answer: this.pickMenu() });
       },
       goCompose: () => this.setState({ screen: 'compose' }),
