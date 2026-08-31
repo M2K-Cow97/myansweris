@@ -1,7 +1,6 @@
 {
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/lunch", "has": [{ "type": "query", "key": "m" }], "destination": "/api/result" },
-    { "source": "/lunch-gif", "has": [{ "type": "query", "key": "m" }], "destination": "/api/result" }
+    { "source": "/r/:page", "destination": "/api/result?page=:page" }
   ]
 }

@@ -11,7 +11,8 @@ export default async function handler(req) {
 
   const secret = process.env.DRAW_SECRET || '';
   const s = secret ? await sign(menu, secret) : '';
-  const url = 'https://myansweris.vercel.app/' + page
+  // /r/... 로 보내야 정적 파일보다 함수가 먼저 잡는다 (cleanUrls 가 /lunch 를 선점)
+  const url = 'https://myansweris.vercel.app/r/' + page
     + '?m=' + encodeURIComponent(menu) + (s ? '&s=' + s : '');
 
   return new Response(JSON.stringify({ url }), {

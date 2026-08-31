@@ -6,7 +6,8 @@ export const config = { runtime: 'edge' };
 // 바꿀 수 없으므로, 여기서 원본을 가져와 메타태그만 갈아끼운다.
 export default async function handler(req) {
   const url = new URL(req.url);
-  const page = url.pathname.includes('gif') ? 'lunch-gif' : 'lunch';
+  const p = url.searchParams.get('page') || '';
+  const page = (p === 'gif' || p === 'lunch-gif' || url.pathname.includes('gif')) ? 'lunch-gif' : 'lunch';
   const menu = (url.searchParams.get('m') || '').slice(0, 20);
   const sig = (url.searchParams.get('s') || '').slice(0, 16);
 
