@@ -27,13 +27,14 @@ function rpc(name) {
   }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
 }
 
-// 결과 아래 한 줄. 표가 몰리면 순위를, 다 갈리면 최근 뽑힌 것들을 보여준다.
+// 결과 아래 한 줄. 기간 제한 없이 전체 누적으로 센다.
+// 표가 몰리면 순위를, 다 갈리면 최근 뽑힌 것들을 보여준다.
 async function todayLine(menu) {
   const [rank, total, recent] = await Promise.all([
-    rpc('today_ranking'), rpc('today_total'), rpc('today_recent'),
+    rpc('all_ranking'), rpc('all_total'), rpc('all_recent'),
   ]);
   if (!total) return '';
-  const parts = ['오늘 ' + total + '명이 뽑았습니다'];
+  const parts = ['지금까지 ' + total + '명이 뽑았습니다'];
   const top = Array.isArray(rank) && rank.length ? rank[0] : null;
   const mine = Array.isArray(rank) ? rank.find((r) => r.menu === menu) : null;
 
