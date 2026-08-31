@@ -39,19 +39,22 @@ async function todayLine(menu) {
     rpc('all_ranking'), rpc('all_total'), rpc('all_recent'),
   ]);
   if (!total) return '';
-  const parts = ['지금까지 ' + (Number(total) + DISPLAY_BASE).toLocaleString() + '명이 뽑았습니다'];
+  const parts = ['방금 ' + (Number(total) + DISPLAY_BASE).toLocaleString() + '번째로 뽑혔습니다'];
   const top = Array.isArray(rank) && rank.length ? rank[0] : null;
   const mine = Array.isArray(rank) ? rank.find((r) => r.menu === menu) : null;
 
-  if (mine && mine.cnt > 1) parts.push(mine.cnt + '명은 같은 메뉴');
+  if (mine && mine.cnt > 1) parts.push('벌써 ' + mine.cnt + '명째 같은 메뉴');
 
-  if (top && top.cnt > 1) {
-    // 표가 몰린 메뉴가 있을 때만 순위가 의미를 갖는다.
-    parts.push('제일 많이 나온 건 ' + top.menu + ' ' + top.flag);
-  } else if (Array.isArray(recent) && recent.length > 1) {
-    // 다 제각각이면 순위 대신 남들이 뭘 받았는지 보여준다.
-    const others = recent.filter((r) => r.menu !== menu).slice(0, 3);
-    if (others.length) parts.push('앞사람은 ' + others.map((r) => r.menu).join(', '));
+  // 최근 목록은 순서가 최신순이라 "바로 앞"이라고 말해도 사실이다.
+  // 반면 순위는 전체 누적이라 지금 벌어지는 일처럼 쓰면 거짓이 된다 — 표현을 나눈다.
+  const others = Array.isArray(recent)
+    ? recent.filter((r) => r.menu !== menu).slice(0, 3)
+    : [];
+
+  if (others.length) {
+    parts.push('바로 앞은 ' + others.map((r) => r.menu).join(', '));
+  } else if (top && top.cnt > 1) {
+    parts.push('요즘 제일 많이 나오는 건 ' + top.menu + ' ' + top.flag);
   }
   return parts.join(' · ');
 }
