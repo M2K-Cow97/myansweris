@@ -18,6 +18,8 @@ export default async function handler(req) {
   const code = (searchParams.get('code') || '').replace(/[^A-Z]/g, '').slice(0, 4);
   // 카톡은 경로마다 비율이 다르다: 링크 붙여넣기는 가로형, 공유 버튼(feed)은 정사각형.
   const square = searchParams.get('ratio') === 'square';
+  // 아직 뽑히지 않은 카드 — 링크만 공유했을 때 나가는 얼굴이다.
+  const blank = menu === '???';
 
   // satori 는 woff2 를 못 읽는다 — otf 여야 한다.
   // 폰트를 못 받으면 한글이 네모로 나오므로, 실패 시엔 이미지 자체를 포기하고
@@ -83,7 +85,10 @@ export default async function handler(req) {
           flexDirection: square ? 'column' : 'row',
           alignItems: 'center', justifyContent: 'center', gap: square ? '0' : '46px',
           background: 'linear-gradient(150deg,#12aede 0%,#1b2fae 38%,#3c1a9e 62%,#a01283 100%)',
-          fontFamily: 'P', padding: square ? '0 40px' : '0 56px 0 200px',
+          fontFamily: 'P',
+          // 가로형 좌측 여백은 짧은 한 줄 기준으로 넓게 잡았다. 두 줄짜리 권유 문구는
+          // 그만큼 폭을 더 먹어서 그대로 두면 스틸이 오른쪽으로 밀려 잘린다.
+          padding: square ? '0 40px' : (blank ? '0 56px 0 96px' : '0 56px 0 200px'),
         },
         children: [
           // 왼쪽: 로고와 문구
@@ -97,17 +102,34 @@ export default async function handler(req) {
               },
               children: [
                 logo ? { type: 'img', props: { src: logo, width: square ? 260 : 250, style: { marginBottom: square ? '26px' : '20px' } } } : null,
-                {
-                  type: 'div',
-                  props: {
-                    style: { display: 'flex', fontSize: '46px', color: '#fff', letterSpacing: '-1.4px' },
-                    children: [
-                      { type: 'div', props: { children: '오늘 점심은,\u00A0' } },
-                      { type: 'div', props: { style: { color: '#8db6ff' }, children: '이걸로.' } },
-                    ],
+                // 아직 안 뽑힌 카드(???)는 결과를 알릴 게 없으니 권유로 말을 건다.
+                // 뽑힌 카드는 그대로 결과를 통보한다.
+                blank
+                  ? {
+                    type: 'div',
+                    props: {
+                      style: {
+                        display: 'flex', flexDirection: 'column',
+                        alignItems: square ? 'center' : 'flex-start',
+                        fontSize: '42px', color: '#fff', letterSpacing: '-1.4px', lineHeight: 1.28,
+                      },
+                      children: [
+                        { type: 'div', props: { children: '챔피언스리그급 점심 메뉴.' } },
+                        { type: 'div', props: { style: { color: '#8db6ff' }, children: '추첨하시겠습니까?' } },
+                      ],
+                    },
+                  }
+                  : {
+                    type: 'div',
+                    props: {
+                      style: { display: 'flex', fontSize: '46px', color: '#fff', letterSpacing: '-1.4px' },
+                      children: [
+                        { type: 'div', props: { children: '오늘 점심은,\u00A0' } },
+                        { type: 'div', props: { style: { color: '#8db6ff' }, children: '이걸로.' } },
+                      ],
+                    },
                   },
-                },
-                {
+                blank ? null : {
                   type: 'div',
                   props: {
                     style: { fontSize: '21px', color: 'rgba(255,255,255,.55)', marginTop: '14px' },
