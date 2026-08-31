@@ -115,7 +115,11 @@ function land(skipCeremony) {
   rowAfter.hidden = false;
   elTitle.innerHTML = '오늘 점심은, <span>이걸로.</span>';
   elSub.textContent = skipCeremony ? '이미 뽑힌 결과입니다' : '번복은 불가능합니다';
-  recordDraw(name, flag, code, 'gif').then(() => todayLine(name)).then((line) => {
+  // 남이 뽑은 결과를 보러 온 사람은 추첨으로 세지 않는다. 순위는 그대로 보여준다.
+  const counted = skipCeremony
+    ? Promise.resolve()
+    : recordDraw(name, flag, code, 'gif');
+  counted.then(() => todayLine(name)).then((line) => {
     if (line) elHint.textContent = line;
   });
   speak(name);   // 공유로 들어와도 결과는 읽어준다

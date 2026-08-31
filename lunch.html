@@ -495,6 +495,12 @@ class Component extends DCLogic {
       });
       // 연출은 건너뛰어도 결과는 읽어준다. 첫 조작 전이면 iOS 가 막으므로
       // primeSpeech 가 풀린 뒤에 한 번 더 시도한다.
+      // 집계는 안 하되(남이 뽑은 걸 보는 것뿐이다) 순위는 보여준다.
+      try {
+        todayLine(seeded.split('\n')[0]).then((line) => {
+          if (line) this.setState({ statsLine: line });
+        });
+      } catch (e) {}
       const say = () => this.speakAnswer(seeded);
       clearTimeout(this._st);
       this._st = setTimeout(say, 700);
