@@ -39,6 +39,8 @@ textarea::placeholder{color:rgba(16,26,77,.3);font-family:'Noto Serif KR',serif;
 @keyframes hueSpin{0%{filter:blur(7px) hue-rotate(0deg)}100%{filter:blur(7px) hue-rotate(360deg)}}
 @keyframes ballRise{0%{transform:translateY(150px) scale(.32);opacity:0}55%{opacity:1}100%{transform:translateY(0) scale(1);opacity:1}}
 @keyframes paperIn{0%{transform:scale(.62);opacity:.25}100%{transform:scale(1);opacity:1}}
+@keyframes statsIn{0%{opacity:0;transform:translateY(4px)}100%{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){@keyframes statsIn{0%,100%{opacity:1;transform:none}}}
 @keyframes lottoA{0%{transform:translate(0,0) rotate(0)}25%{transform:translate(78px,-72px) rotate(90deg)}50%{transform:translate(140px,-8px) rotate(200deg)}75%{transform:translate(58px,-96px) rotate(280deg)}100%{transform:translate(0,0) rotate(360deg)}}
 @keyframes lottoB{0%{transform:translate(0,0) rotate(0)}30%{transform:translate(-64px,-80px) rotate(-120deg)}55%{transform:translate(-110px,-6px) rotate(-190deg)}80%{transform:translate(-40px,-104px) rotate(-300deg)}100%{transform:translate(0,0) rotate(-360deg)}}
 @keyframes lottoC{0%{transform:translate(0,0) rotate(0)}20%{transform:translate(40px,-100px) rotate(140deg)}45%{transform:translate(-52px,-58px) rotate(220deg)}70%{transform:translate(66px,-30px) rotate(300deg)}100%{transform:translate(0,0) rotate(360deg)}}
@@ -179,7 +181,11 @@ textarea::placeholder{color:rgba(16,26,77,.3);font-family:'Noto Serif KR',serif;
           <button onClick="{{ refold }}" style="flex:1;padding:15px;border:1px solid rgba(255,255,255,.16);border-radius:999px;background:rgba(10,14,40,.5);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:15px;font-weight:500;cursor:pointer;backdrop-filter:blur(8px)" style-hover="background:rgba(255,255,255,.12)">다시 뽑기</button>
           <button onClick="{{ shareKakao }}" style="flex:1;padding:15px;border:none;border-radius:999px;background:linear-gradient(135deg,#6ea8ff,#2f6bff);color:#fff;font-family:'Noto Sans KR',sans-serif;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 10px 28px rgba(47,107,255,.4)" style-hover="filter:brightness(1.08)">카톡 공유</button>
         </div>
-        <p style="position:relative;z-index:1;margin:12px 0 0;font-size:11px;color:rgba(255,255,255,.45);text-align:center;min-height:16px">{{ statsLine }}</p>
+        <div style="position:relative;z-index:1;margin:12px 0 0;min-height:16px">
+          <sc-for list="{{ statsLines }}" as="s" hint-placeholder-count="0">
+            <p style="margin:0;font-size:11px;line-height:1.55;color:rgba(255,255,255,.45);text-align:center;animation:statsIn .45s ease both;animation-delay:{{ s.d }}ms">{{ s.t }}</p>
+          </sc-for>
+        </div>
       </sc-if>
     </div>
   </sc-if>
@@ -539,6 +545,8 @@ class Component extends DCLogic {
     return {
       shareKakao: this.shareKakao,
       statsLine: s.statsLine,
+      // 두 줄을 각각 렌더해 시차를 준다. 갱신되는 느낌은 여기서 나온다.
+      statsLines: s.statsLine ? s.statsLine.split('\n').map((t, i) => ({ t: t, d: i * 260 })) : [],
       soundIcon: s.muted ? '🔇' : '🔊',
       soundLabel: s.muted ? '음악 켜기' : '음악 끄기',
       toggleMute: () => {

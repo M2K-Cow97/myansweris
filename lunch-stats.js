@@ -41,30 +41,58 @@ function eul(word) {
   return (c - 0xac00) % 28 ? '을' : '를';
 }
 
-// 결과 아래 한 줄. 기간 제한 없이 전체 누적으로 센다.
-// 표가 몰리면 순위를, 다 갈리면 최근 뽑힌 것들을 보여준다.
+// 통계 줄을 갱신되는 것처럼 올린다. 두 줄을 각각 span 으로 넣고 시차를 줘서
+// 내 순번이 먼저 서고 남들 결과가 뒤따라 붙는 순서를 만든다.
+// 텍스트는 textContent 로만 넣는다 — 메뉴 이름은 DB 를 거쳐 온 값이다.
+function paintStats(el, line) {
+  if (!el || !line) return;
+  el.textContent = '';
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  line.split('\n').forEach((t, i) => {
+    const span = document.createElement('span');
+    span.textContent = t;
+    span.style.display = 'block';
+    if (reduce) { el.appendChild(span); return; }
+    span.style.cssText += ';opacity:0;transform:translateY(4px);' +
+      'transition:opacity .45s ease,transform .45s ease;transition-delay:' + (i * 260) + 'ms';
+    el.appendChild(span);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      span.style.opacity = '1';
+      span.style.transform = 'none';
+    }));
+  });
+}
+
+// 결과 아래 두 줄. 기간 제한 없이 전체 누적으로 센다.
+// 윗줄은 내 차례, 아랫줄은 남들 — 한 줄에 다 넣으면 좁은 화면에서 네 줄까지 흘렀다.
+// 줄바꿈 문자로 돌려주고 CSS 의 white-space 가 살린다.
 async function todayLine(menu) {
   const [rank, total, recent] = await Promise.all([
     rpc('all_ranking'), rpc('all_total'), rpc('all_recent'),
   ]);
   if (!total) return '';
-  const parts = [(Number(total) + DISPLAY_BASE).toLocaleString() + '번째로 뽑았습니다'];
-  const top = Array.isArray(rank) && rank.length ? rank[0] : null;
+
   const mine = Array.isArray(rank) ? rank.find((r) => r.menu === menu) : null;
+  const top = Array.isArray(rank) && rank.length ? rank[0] : null;
 
-  if (mine && mine.cnt > 1) parts.push('벌써 ' + mine.cnt + '명째 같은 메뉴');
+  // 윗줄 — 내 순번, 겹쳤으면 그 사실까지.
+  let head = (Number(total) + DISPLAY_BASE).toLocaleString() + '번째로 뽑았습니다';
+  if (mine && mine.cnt > 1) head += ' · 벌써 ' + mine.cnt + '명째 같은 메뉴';
 
-  // 최근 목록은 최신순이라 지금 벌어지는 일로 말해도 사실이다.
-  // 반면 순위는 전체 누적이라 지금 벌어지는 일처럼 쓰면 거짓이 된다 — 표현을 나눈다.
+  // 아랫줄 — 최근 목록은 최신순이라 지금 벌어지는 일로 말해도 사실이다.
+  // 반면 순위는 전체 누적이라 같은 말투를 쓰면 거짓이 된다 — 표현을 나눈다.
+  // 두 개까지만: 세 개를 넣으면 이름이 긴 메뉴가 겹칠 때 아랫줄이 두 줄로 접힌다.
   const others = Array.isArray(recent)
-    ? recent.filter((r) => r.menu !== menu).slice(0, 3)
+    ? recent.filter((r) => r.menu !== menu).slice(0, 2)
     : [];
 
+  let tail = '';
   if (others.length) {
     const list = others.map((r) => r.menu).join(', ');
-    parts.push('다른 사람들은 ' + list + eul(list) + ' 뽑았습니다');
+    tail = '다른 사람들은 ' + list + eul(list) + ' 뽑았습니다';
   } else if (top && top.cnt > 1) {
-    parts.push('요즘 제일 많이 나오는 건 ' + top.menu + ' ' + top.flag);
+    tail = '요즘 제일 많이 나오는 건 ' + top.menu + ' ' + top.flag;
   }
-  return parts.join(' · ');
+
+  return tail ? head + '\n' + tail : head;
 }
