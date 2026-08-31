@@ -32,6 +32,15 @@ function rpc(name) {
 // 통계 쿼리는 여전히 진짜 숫자를 돌려준다.
 const DISPLAY_BASE = 111;
 
+// 목록 끝 글자의 받침에 따라 을/를 을 고른다.
+// 한글 음절은 0xAC00 부터 종성 28개 단위로 배열돼 있어 나머지가 0이면 받침이 없다.
+// 메뉴에 한글이 아닌 글자로 끝나는 이름은 없지만, 그런 경우엔 '를' 로 둔다.
+function eul(word) {
+  const c = word.charCodeAt(word.length - 1);
+  if (c < 0xac00 || c > 0xd7a3) return '를';
+  return (c - 0xac00) % 28 ? '을' : '를';
+}
+
 // 결과 아래 한 줄. 기간 제한 없이 전체 누적으로 센다.
 // 표가 몰리면 순위를, 다 갈리면 최근 뽑힌 것들을 보여준다.
 async function todayLine(menu) {
@@ -45,14 +54,15 @@ async function todayLine(menu) {
 
   if (mine && mine.cnt > 1) parts.push('벌써 ' + mine.cnt + '명째 같은 메뉴');
 
-  // 최근 목록은 순서가 최신순이라 "방금"이라고 말해도 사실이다.
+  // 최근 목록은 최신순이라 지금 벌어지는 일로 말해도 사실이다.
   // 반면 순위는 전체 누적이라 지금 벌어지는 일처럼 쓰면 거짓이 된다 — 표현을 나눈다.
   const others = Array.isArray(recent)
     ? recent.filter((r) => r.menu !== menu).slice(0, 3)
     : [];
 
   if (others.length) {
-    parts.push('방금 나온 건 ' + others.map((r) => r.menu).join(', '));
+    const list = others.map((r) => r.menu).join(', ');
+    parts.push('다른 사람들은 ' + list + eul(list) + ' 뽑았습니다');
   } else if (top && top.cnt > 1) {
     parts.push('요즘 제일 많이 나오는 건 ' + top.menu + ' ' + top.flag);
   }
