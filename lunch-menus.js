@@ -174,7 +174,7 @@ btnShare.addEventListener('click', async () => {
         content: {
           title: '점심 조추첨이 완료 되었습니다.',
           description: text + ' · 이의 제기는 받지 않습니다',
-          imageUrl: 'https://myansweris.vercel.app/api/og?ratio=square&menu=' + encodeURIComponent(name)
+          imageUrl: 'https://myansweris.vercel.app/api/og?v=2&ratio=square&menu=' + encodeURIComponent(name)
             + '&flag=' + encodeURIComponent(flag) + '&code=' + encodeURIComponent(code),
           imageWidth: 800,
           imageHeight: 800,

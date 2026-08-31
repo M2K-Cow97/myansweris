@@ -20,7 +20,9 @@ export default async function handler(req) {
 
   if (ok) {
     // 서명이 맞을 때만 메뉴가 박힌 카드를 미리보기로 내보낸다.
-    const img = origin + '/api/og?menu=' + encodeURIComponent(menu);
+    // 카드 디자인 버전. og.js 의 응답은 immutable 로 1 년 캐시되므로, 문구나
+    // 레이아웃을 바꿀 때 이 값을 올려야 카카오가 새 이미지로 인식한다.
+    const img = origin + '/api/og?v=2&menu=' + encodeURIComponent(menu);
     html = html
       .replace(/(<meta property="og:image" content=")[^"]*(")/, '$1' + img + '$2')
       .replace(/(<meta name="twitter:image" content=")[^"]*(")/, '$1' + img + '$2')

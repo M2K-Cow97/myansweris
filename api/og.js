@@ -17,6 +17,9 @@ export default async function handler(req) {
   const flag = (searchParams.get('flag') || '').slice(0, 8);
   const code = (searchParams.get('code') || '').replace(/[^A-Z]/g, '').slice(0, 4);
   // 카톡은 경로마다 비율이 다르다: 링크 붙여넣기는 가로형, 공유 버튼(feed)은 정사각형.
+  // v 는 읽지 않는다 — 카드 디자인 버전을 URL 에 남겨 캐시를 깨기 위한 값이다.
+  // 이 응답은 immutable 로 1 년 캐시되므로, 문구나 레이아웃을 바꿨을 때
+  // 이 파일만 고치면 카카오는 옛 이미지를 계속 보여준다. 호출하는 쪽의 v 를 올려야 한다.
   const square = searchParams.get('ratio') === 'square';
   // 아직 뽑히지 않은 카드 — 링크만 공유했을 때 나가는 얼굴이다.
   const blank = menu === '???';
