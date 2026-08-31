@@ -39,20 +39,20 @@ async function todayLine(menu) {
     rpc('all_ranking'), rpc('all_total'), rpc('all_recent'),
   ]);
   if (!total) return '';
-  const parts = ['방금 ' + (Number(total) + DISPLAY_BASE).toLocaleString() + '번째로 뽑혔습니다'];
+  const parts = [(Number(total) + DISPLAY_BASE).toLocaleString() + '번째로 뽑았습니다'];
   const top = Array.isArray(rank) && rank.length ? rank[0] : null;
   const mine = Array.isArray(rank) ? rank.find((r) => r.menu === menu) : null;
 
   if (mine && mine.cnt > 1) parts.push('벌써 ' + mine.cnt + '명째 같은 메뉴');
 
-  // 최근 목록은 순서가 최신순이라 "바로 앞"이라고 말해도 사실이다.
+  // 최근 목록은 순서가 최신순이라 "방금"이라고 말해도 사실이다.
   // 반면 순위는 전체 누적이라 지금 벌어지는 일처럼 쓰면 거짓이 된다 — 표현을 나눈다.
   const others = Array.isArray(recent)
     ? recent.filter((r) => r.menu !== menu).slice(0, 3)
     : [];
 
   if (others.length) {
-    parts.push('바로 앞은 ' + others.map((r) => r.menu).join(', '));
+    parts.push('방금 나온 건 ' + others.map((r) => r.menu).join(', '));
   } else if (top && top.cnt > 1) {
     parts.push('요즘 제일 많이 나오는 건 ' + top.menu + ' ' + top.flag);
   }
