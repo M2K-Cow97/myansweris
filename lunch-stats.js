@@ -27,6 +27,11 @@ function rpc(name) {
   }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
 }
 
+// 서비스를 열자마자 "1명이 뽑았습니다" 가 뜨면 아무도 안 쓰는 것처럼 보인다.
+// DB 에는 실제 기록만 남기고, 화면에 보여줄 때만 이만큼 얹는다 —
+// 통계 쿼리는 여전히 진짜 숫자를 돌려준다.
+const DISPLAY_BASE = 240;
+
 // 결과 아래 한 줄. 기간 제한 없이 전체 누적으로 센다.
 // 표가 몰리면 순위를, 다 갈리면 최근 뽑힌 것들을 보여준다.
 async function todayLine(menu) {
@@ -34,7 +39,7 @@ async function todayLine(menu) {
     rpc('all_ranking'), rpc('all_total'), rpc('all_recent'),
   ]);
   if (!total) return '';
-  const parts = ['지금까지 ' + total + '명이 뽑았습니다'];
+  const parts = ['지금까지 ' + (Number(total) + DISPLAY_BASE).toLocaleString() + '명이 뽑았습니다'];
   const top = Array.isArray(rank) && rank.length ? rank[0] : null;
   const mine = Array.isArray(rank) ? rank.find((r) => r.menu === menu) : null;
 
