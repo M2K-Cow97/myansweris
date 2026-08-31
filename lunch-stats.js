@@ -63,10 +63,24 @@ function paintStats(el, line) {
   });
 }
 
+// 안 뽑힌 후보 중에서 n 개를 고른다. 뽑힌 메뉴 자신은 뺀다.
+// pool 은 [이름, 국기, 코드] 배열 — 페이지마다 자기 목록을 갖고 있어 넘겨받는다.
+function missedCandidates(menu, pool, n) {
+  if (!Array.isArray(pool) || !pool.length) return [];
+  const names = pool
+    .map((m) => (Array.isArray(m) ? m[0] : m))
+    .filter((x) => typeof x === 'string' && x && x !== menu);
+  const out = [];
+  while (out.length < n && names.length) {
+    out.push(names.splice(Math.floor(Math.random() * names.length), 1)[0]);
+  }
+  return out;
+}
+
 // 결과 아래 두 줄. 기간 제한 없이 전체 누적으로 센다.
 // 윗줄은 내 차례, 아랫줄은 남들 — 한 줄에 다 넣으면 좁은 화면에서 네 줄까지 흘렀다.
 // 줄바꿈 문자로 돌려주고 CSS 의 white-space 가 살린다.
-async function todayLine(menu) {
+async function todayLine(menu, pool) {
   const [rank, total, recent] = await Promise.all([
     rpc('all_ranking'), rpc('all_total'), rpc('all_recent'),
   ]);
@@ -79,19 +93,28 @@ async function todayLine(menu) {
   let head = (Number(total) + DISPLAY_BASE).toLocaleString() + '번째로 뽑았습니다';
   if (mine && mine.cnt > 1) head += ' · 벌써 ' + mine.cnt + '명째 같은 메뉴';
 
-  // 아랫줄 — 최근 목록은 최신순이라 지금 벌어지는 일로 말해도 사실이다.
-  // 반면 순위는 전체 누적이라 같은 말투를 쓰면 거짓이 된다 — 표현을 나눈다.
-  // 두 개까지만: 세 개를 넣으면 이름이 긴 메뉴가 겹칠 때 아랫줄이 두 줄로 접힌다.
+  // 아랫줄 — 두 개까지만. 세 개를 넣으면 이름이 긴 메뉴가 겹칠 때 두 줄로 접힌다.
+  //
+  // 최근 목록은 최신순이라 "다른 사람들" 이라고 말해도 사실이지만, 이용자가 적을 때는
+  // 그 목록이 대부분 내가 방금 남긴 기록이라 남 얘기가 아니게 된다. 그래서 남들이
+  // 충분히 쌓이기 전에는 주체를 바꿔서, 안 뽑힌 후보를 후보라고만 말한다 —
+  // 뽑지도 않은 메뉴를 누가 뽑았다고 하면 그건 통계가 아니라 지어낸 이야기가 된다.
   const others = Array.isArray(recent)
     ? recent.filter((r) => r.menu !== menu).slice(0, 2)
     : [];
 
   let tail = '';
-  if (others.length) {
+  if (others.length >= 2) {
     const list = others.map((r) => r.menu).join(', ');
     tail = '다른 사람들은 ' + list + eul(list) + ' 뽑았습니다';
-  } else if (top && top.cnt > 1) {
-    tail = '요즘 제일 많이 나오는 건 ' + top.menu + ' ' + top.flag;
+  } else {
+    const near = missedCandidates(menu, pool, 2);
+    if (near.length) {
+      const list = near.join(', ');
+      tail = '하마터면 ' + list + (eul(list) === '을' ? '이' : '가') + ' 될 뻔했습니다';
+    } else if (top && top.cnt > 1) {
+      tail = '요즘 제일 많이 나오는 건 ' + top.menu + ' ' + top.flag;
+    }
   }
 
   return tail ? head + '\n' + tail : head;

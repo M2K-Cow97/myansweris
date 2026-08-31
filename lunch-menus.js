@@ -119,7 +119,7 @@ function land(skipCeremony) {
   const counted = skipCeremony
     ? Promise.resolve()
     : recordDraw(name, flag, code, 'gif');
-  counted.then(() => todayLine(name)).then((line) => {
+  counted.then(() => todayLine(name, MENUS)).then((line) => {
     paintStats(elHint, line);
   });
   speak(name);   // 공유로 들어와도 결과는 읽어준다

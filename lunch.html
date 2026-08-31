@@ -503,7 +503,7 @@ class Component extends DCLogic {
       // primeSpeech 가 풀린 뒤에 한 번 더 시도한다.
       // 집계는 안 하되(남이 뽑은 걸 보는 것뿐이다) 순위는 보여준다.
       try {
-        todayLine(seeded.split('\n')[0]).then((line) => {
+        todayLine(seeded.split('\n')[0], this.MENUS).then((line) => {
           if (line) this.setState({ statsLine: line });
         });
       } catch (e) {}
@@ -658,7 +658,7 @@ class Component extends DCLogic {
           const fl = (tail || '').split(' ')[0];
           const cd = (tail || '').replace(/[^A-Z]/g, '');
           recordDraw(nm, fl, cd, 'app')
-            .then(() => todayLine(nm))
+            .then(() => todayLine(nm, this.MENUS))
             .then((line) => { if (line) this.setState({ statsLine: line }); });
         } catch (e) {}
         clearTimeout(this._ct);
