@@ -60,6 +60,9 @@ function b64decode(str) {
 }
 // #메뉴 로 들어오면 그 결과를 고정한다
 function seededMenu() {
+  // 새 형식(?m=메뉴)과 예전 공유 링크(#base64) 를 모두 받는다.
+  const q = new URLSearchParams(location.search).get('m');
+  if (q) return MENUS.find((m) => m[0] === q) || null;
   const h = location.hash.slice(1);
   if (!h) return null;
   try {
@@ -142,18 +145,23 @@ btnStart.addEventListener('click', () => {
 });
 
 btnRedraw.addEventListener('click', () => {
-  if (location.hash) history.replaceState(null, '', location.pathname);
+  if (location.hash || location.search) history.replaceState(null, '', location.pathname);
   draw();
 });
 window.addEventListener('resize', () => { if (slip.classList.contains('on')) fitSlip(); });
 
-btnShare.addEventListener('click', () => {
+btnShare.addEventListener('click', async () => {
   if (!current) return;
   const [name, flag, code] = current;
   const text = '오늘 점심은 ' + name + ' ' + flag;
-  const base = location.href.split('#')[0];
-  const resultUrl = base + '#' + b64encode(name);
+  const base = location.origin + location.pathname;
   const url = base;
+  // 서명된 결과 링크를 받아온다. 실패하면 예전 해시 방식으로 떨어진다.
+  let resultUrl = base + '#' + b64encode(name);
+  try {
+    const r = await fetch('/api/share?page=gif&menu=' + encodeURIComponent(name));
+    if (r.ok) { const j = await r.json(); if (j.url) resultUrl = j.url; }
+  } catch (e) {}
   try {
     if (window.Kakao) {
       if (!window.Kakao.isInitialized()) window.Kakao.init(KAKAO_KEY);

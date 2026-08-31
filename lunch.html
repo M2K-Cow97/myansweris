@@ -412,15 +412,19 @@ class Component extends DCLogic {
     const [name, flag, code] = this.MENUS[i];
     return name + '\n' + flag + ' (' + code + ')';
   }
-  shareKakao = () => {
+  shareKakao = async () => {
     // 종이엔 "메뉴\n국기 (코드)" 로 들어있다. 공유 문구엔 메뉴 + 국기까지만.
     const [menu, tail] = String(this.state.answer || '').split('\n');
     const flag = (tail || '').split(' ')[0];
     const code = (tail || '').replace(/[^A-Z]/g, '');
     const text = '오늘 점심은 ' + menu + (flag ? ' ' + flag : '');
-    const base = location.href.split('#')[0];
-    const resultUrl = base + '#' + this.b64encode(menu);   // 메뉴명만 담아 링크를 짧게
+    const base = location.origin + location.pathname;
     const url = base;
+    let resultUrl = base + '#' + this.b64encode(menu);
+    try {
+      const r = await fetch('/api/share?page=app&menu=' + encodeURIComponent(menu));
+      if (r.ok) { const j = await r.json(); if (j.url) resultUrl = j.url; }
+    } catch (e) {}
     try {
       if (window.Kakao) {
         if (!window.Kakao.isInitialized()) window.Kakao.init('0a6d4475254b25344a9e9f7777580b92');
@@ -467,14 +471,21 @@ class Component extends DCLogic {
     );
 
     // 공유 링크(#메뉴)로 들어오면 그 결과를, 아니면 새로 뽑는다.
-    const h = location.hash.slice(1);
+    // 새 형식(?m=메뉴)과 예전 공유 링크(#base64) 를 모두 받는다.
     let seeded = '';
-    if (h) {
-      try {
-        const name = this.b64decode(h);
-        const hit = this.MENUS.find((m) => m[0] === name);
-        if (hit) seeded = hit[0] + '\n' + hit[1] + ' (' + hit[2] + ')';
-      } catch (e) {}
+    const q = new URLSearchParams(location.search).get('m');
+    const hit0 = q ? this.MENUS.find((m) => m[0] === q) : null;
+    if (hit0) {
+      seeded = hit0[0] + '\n' + hit0[1] + ' (' + hit0[2] + ')';
+    } else {
+      const h = location.hash.slice(1);
+      if (h) {
+        try {
+          const name = this.b64decode(h);
+          const hit = this.MENUS.find((m) => m[0] === name);
+          if (hit) seeded = hit[0] + '\n' + hit[1] + ' (' + hit[2] + ')';
+        } catch (e) {}
+      }
     }
     if (seeded) {
       // 공유받은 결과를 확인하러 온 사람이다 — 추첨을 다시 보여줄 이유가 없다.
@@ -643,7 +654,7 @@ class Component extends DCLogic {
       },
       refold: () => {
         clearTimeout(this._ct); clearTimeout(this._st); this.stopSpeak();
-        if (location.hash) history.replaceState(null, '', location.pathname);
+        if (location.hash || location.search) history.replaceState(null, '', location.pathname);
         this.setState({ skipCeremony: false });
         this.setState({ revealed: false, confettiOn: false, phase: 'bowl', ballOpen: false, ballEntered: false, ballFrom: null, answer: this.pickMenu() });
       },
