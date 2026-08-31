@@ -70,7 +70,7 @@ export default async function handler(req) {
   // 1200x630 가로형. 링크 붙여넣기 경로가 이 비율을 쓴다.
   // 위아래가 잘려도 살아남도록 내용을 세로 중앙에 모은다.
   const W = square ? 800 : 1200, H = square ? 800 : 630;
-  const SW = square ? 720 : 770, SH = square ? 403 : 431;   // 스틸(400x224) 비율 유지
+  const SW = square ? 720 : 620, SH = square ? 403 : 347;   // 스틸(400x224) 비율 유지
   const PX = 79 / 400 * SW, PY = 60 / 224 * SH;
   const PW = (222 - 79) / 400 * SW, PH = (124 - 60) / 224 * SH;
 
@@ -81,9 +81,9 @@ export default async function handler(req) {
         style: {
           width: W + 'px', height: H + 'px', display: 'flex',
           flexDirection: square ? 'column' : 'row',
-          alignItems: 'center', justifyContent: 'center', gap: square ? '0' : '40px',
+          alignItems: 'center', justifyContent: 'center', gap: square ? '0' : '46px',
           background: 'linear-gradient(150deg,#12aede 0%,#1b2fae 38%,#3c1a9e 62%,#a01283 100%)',
-          fontFamily: 'P', padding: square ? '0 40px' : '0 44px',
+          fontFamily: 'P', padding: square ? '0 40px' : '0 56px 0 200px',
         },
         children: [
           // 왼쪽: 로고와 문구
@@ -96,7 +96,7 @@ export default async function handler(req) {
                 marginBottom: square ? '38px' : '0',
               },
               children: [
-                logo ? { type: 'img', props: { src: logo, width: square ? 260 : 300, style: { marginBottom: square ? '26px' : '22px' } } } : null,
+                logo ? { type: 'img', props: { src: logo, width: square ? 260 : 250, style: { marginBottom: square ? '26px' : '20px' } } } : null,
                 {
                   type: 'div',
                   props: {
