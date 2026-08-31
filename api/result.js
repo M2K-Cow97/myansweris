@@ -30,6 +30,10 @@ export default async function handler(req) {
         '$1오늘 점심은 ' + menu + ' · 이의 제기는 받지 않습니다$2');
   }
 
+  // /r/... 에서 서빙하므로 상대경로 자산(lunch-menus.js 등)이 /r/ 기준으로
+  // 해석된다. base 를 박아 원래 위치를 가리키게 한다.
+  html = html.replace(/<head>/i, '<head><base href="' + origin + '/">');
+
   return new Response(html, {
     headers: {
       'content-type': 'text/html; charset=utf-8',
